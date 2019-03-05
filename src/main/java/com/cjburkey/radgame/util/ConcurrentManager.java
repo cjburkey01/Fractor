@@ -3,6 +3,7 @@ package com.cjburkey.radgame.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
@@ -21,19 +22,30 @@ public final class ConcurrentManager<K, T extends IConcurrentObject> {
         toRemove.offer(new QueuedObject(key, object));
     }
 
-    public void update() {
+    public void queueRemove(K key) {
+        toRemove.offer(new QueuedObject(key, null));
+    }
+
+    public void flush() {
         while (!toRemove.isEmpty()) {
             var queuedObject = toRemove.poll();
             if (queuedObject != null) {
-                queuedObject.object.onRemove();
-                getList(queuedObject.key).remove(queuedObject.object);
+                if (queuedObject.object == null) {
+                    objects.remove(queuedObject.key);
+                } else {
+                    queuedObject.object.onRemove();
+                    getList(queuedObject.key).remove(queuedObject.object);
+                }
             }
         }
         while (!toAdd.isEmpty()) {
             var queuedObject = toAdd.poll();
             if (queuedObject != null) {
-                getList(queuedObject.key).add(queuedObject.object);
-                queuedObject.object.onLoad();
+                List<T> list = getList(queuedObject.key);
+                if (list.size() < queuedObject.object.maxPerObject()) {
+                    list.add(queuedObject.object);
+                    queuedObject.object.onLoad();
+                }
             }
         }
     }
@@ -46,7 +58,7 @@ public final class ConcurrentManager<K, T extends IConcurrentObject> {
         objects.values().forEach(list -> list.forEach(consumer));
     }
 
-    public void clear() {
+    public void queueClear() {
         toRemove.clear();
         for (K key : objects.keySet()) {
             for (T object : getList(key)) queueRemove(key, object);
@@ -72,7 +84,7 @@ public final class ConcurrentManager<K, T extends IConcurrentObject> {
         private final T object;
 
         private QueuedObject(K key, T object) {
-            this.key = key;
+            this.key = Objects.requireNonNull(key);
             this.object = object;
         }
 
@@ -80,9 +92,9 @@ public final class ConcurrentManager<K, T extends IConcurrentObject> {
             return key.hashCode();
         }
 
+        @SuppressWarnings("unchecked")
         public boolean equals(Object other) {
             if (other instanceof ConcurrentManager.QueuedObject) {
-                //noinspection unchecked
                 return key.equals(((QueuedObject) other).key);
             }
             return false;

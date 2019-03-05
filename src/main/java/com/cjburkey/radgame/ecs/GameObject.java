@@ -1,31 +1,70 @@
 package com.cjburkey.radgame.ecs;
 
+import com.cjburkey.radgame.component.Transform;
 import com.cjburkey.radgame.util.ConcurrentManager;
 import com.cjburkey.radgame.util.IConcurrentObject;
+import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
 
 public final class GameObject implements IConcurrentObject {
 
     private final ConcurrentManager<Class<? extends Component>, Component> components = new ConcurrentManager<>();
 
+    public final Transform transform = addComponent(new Transform());
+
     GameObject() {
     }
 
-    public <T extends Component> void addComponent(Class<T> type, T component) {
-        components.queueAdd(type, component);
+    public <T extends Component> T addComponent(T component) {
+        if (component.parent() != null) return null;
+        components.queueAdd(component.getClass(), component);
+        component.setParent(this);
+        return component;
     }
 
-    public <T extends Component> void removeComponent(Class<T> type, T component) {
-        components.queueRemove(type, component);
+    public void addComponents(Component... components) {
+        for (Component component : components) addComponent(component);
     }
 
+    public void addComponents(Collection<Component> components) {
+        components.forEach(this::addComponent);
+    }
+
+    public <T extends Component> T removeComponent(T component) {
+        if (component.parent() == null) return null;
+        components.queueRemove(component.getClass(), component);
+        return component;
+    }
+
+    public <T extends Component> void removeComponents(Class<T> type) {
+        components.queueRemove(type);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Component> List<T> getComponents(Class<T> type) {
+        return (List<T>) components.getObjects(type);
+    }
+
+    public <T extends Component> T getComponent(Class<T> type) {
+        List<T> components = getComponents(type);
+        if (components.size() > 0) return components.get(0);
+        return null;
+    }
+
+    @Override
     public void onLoad() {
-        components.update();
+        flush();
     }
 
+    @Override
     public void onRemove() {
-        components.clear();
-        components.update();
+        components.queueClear();
+        flush();
+    }
+
+    public int maxPerObject() {
+        return Integer.MAX_VALUE;
     }
 
     public void foreach(Consumer<Component> consumer) {
@@ -34,6 +73,10 @@ public final class GameObject implements IConcurrentObject {
 
     public void foreach(Class<? extends Component> type, Consumer<Component> consumer) {
         components.foreach(type, consumer);
+    }
+
+    public void flush() {
+        components.flush();
     }
 
 }

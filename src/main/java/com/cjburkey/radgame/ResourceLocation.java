@@ -1,5 +1,7 @@
 package com.cjburkey.radgame;
 
+import com.cjburkey.radgame.util.IO;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -20,6 +22,10 @@ public class ResourceLocation {
 
     public ResourceLocation(String domain, String path) {
         this(domain, path, null);
+    }
+
+    public String readResource() throws IOException {
+        return IO.readResource(getFullPath());
     }
 
     public String getFullPath() {

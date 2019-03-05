@@ -8,6 +8,7 @@ group 'com.cjburkey'
 version '0.0.1'
 
 sourceCompatibility = 11
+targetCompatibility = 11
 
 project.ext.lwjglVersion = "3.2.2-SNAPSHOT"
 project.ext.jomlVersion = "1.9.12"
@@ -43,6 +44,10 @@ dependencies {
     runtimeOnly "org.lwjgl:lwjgl-opengl:$lwjglVersion:$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-stb:$lwjglVersion:$lwjglNatives"
     implementation "org.joml:joml:${jomlVersion}"
+}
+
+compileJava {
+    options.compilerArgs += '-Xlint:all'
 }
 
 task runRadGame(type: JavaExec) {

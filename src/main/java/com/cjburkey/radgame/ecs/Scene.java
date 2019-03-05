@@ -5,30 +5,41 @@ import java.util.function.Consumer;
 
 public class Scene {
 
-    private final ConcurrentManager<Void, GameObject> objects = new ConcurrentManager<>();
+    private byte KEY = (byte) 0;
+    private final ConcurrentManager<Byte, GameObject> objects = new ConcurrentManager<>();
 
-    public GameObject createGameObject() {
+    public GameObject createObject() {
         GameObject obj = new GameObject();
-        objects.queueAdd(null, obj);
+        objects.queueAdd(KEY, obj);
         return obj;
     }
 
-    public GameObjectBuilder buildGameObject() {
-
+    public GameObject createObjectWith(Component... components) {
+        var object = createObject();
+        object.addComponents(components);
+        return object;
     }
 
     public void destroy(GameObject obj) {
-        objects.queueRemove(null, obj);
+        objects.queueRemove(KEY, obj);
     }
 
     public void foreach(Consumer<GameObject> consumer) {
         objects.foreach(consumer);
     }
 
-    public static class GameObjectBuilder {
+    public void foreachComp(Consumer<Component> consumer) {
+        foreach(obj -> obj.foreach(consumer));
+    }
 
-        private final
+    public void flush() {
+        objects.flush();
+        objects.foreach(GameObject::flush);
+    }
 
+    public void clear() {
+        foreach(this::destroy);
+        flush();
     }
 
 }

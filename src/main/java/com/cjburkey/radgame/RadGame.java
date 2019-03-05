@@ -1,196 +1,120 @@
 package com.cjburkey.radgame;
 
-import com.cjburkey.radgame.gl.Mesh;
-import com.cjburkey.radgame.gl.shader.RawShader;
+import com.cjburkey.radgame.ecs.Component;
+import com.cjburkey.radgame.ecs.Scene;
+import com.cjburkey.radgame.game.GameManager;
 import java.io.Closeable;
-import java.lang.Math;
-import java.util.Objects;
-import org.joml.*;
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.opengl.GL;
 
-import static org.lwjgl.glfw.Callbacks.*;
-import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.system.MemoryUtil.*;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class RadGame implements Runnable, Closeable {
 
-    private static Matrix4f projectionMatrix = new Matrix4f();
-    private static Matrix4f viewMatrix = new Matrix4f();
-    private static Matrix4f modelMatrix = new Matrix4f();
+    public static RadGame INSTANCE = new RadGame();
 
-    private long window = 0L;
     private boolean running = false;
-    private final Vector2i windowSize = new Vector2i(300, 300);
+    private Window window;
 
-    private RawShader rawShader;
-    private Mesh mesh;
+    private final Scene scene = new Scene();
+
+    static {
+        // These are the default JOML settings; I can change them later if they become important
+        System.setProperty("joml.debug", "false");
+        System.setProperty("joml.nounsafe", "false");
+        System.setProperty("joml.fastmath", "false");
+        System.setProperty("joml.sinLookup", "false");
+        System.setProperty("joml.sinLookup.bits", "14");
+        System.setProperty("joml.format", "true");
+        System.setProperty("joml.format.decimals", "3");
+    }
 
     public static void main(String[] args) {
-        var game = new RadGame();
-        game.run();
-        game.close();
+        INSTANCE.run();
+        INSTANCE.close();
     }
 
     private RadGame() {
     }
 
     private void initWindow() {
-        GLFWErrorCallback.createPrint(System.err).set();
-
-        if (!glfwInit()) {
-            throw new IllegalStateException("Failed to initialize GLFW");
-        }
-
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-        window = glfwCreateWindow(windowSize.x, windowSize.y, "RadGame 0.0.1", NULL, NULL);
-        if (window == NULL) {
-            throw new IllegalStateException("Failed to initialize window");
-        }
-
-        glfwMakeContextCurrent(window);
-        glfwSwapInterval(1);
-        GL.createCapabilities();
-
-        glfwSetFramebufferSizeCallback(window, (win, w, h) -> {
-            glViewport(0, 0, w, h);
-            windowSize.set(w, h);
-        });
-
-        glfwShowWindow(window);
-    }
-
-    private void initShader() {
-        rawShader = RawShader.builder()
-                .setVertexShader(new ResourceLocation("radgame", "shader/vertShader", "glsl"))
-                .setFragmentShader(new ResourceLocation("radgame", "shader/fragShader", "glsl"))
-                .addUniforms("projectionMatrix", "viewMatrix", "modelMatrix")
-                .build();
+        window = new Window(300, 300, "Fractor 0.0.1");
+        window.setWindowSizeRatioMonitor(2, 3);
+        window.center();
+        window.show();
     }
 
     private void startGameLoop() {
-        running = true;
+        final var targetUpdate = Time.updateDelta();
+        var currentTime = Time.getTime();
+        var accumulator = 0.0;
+        scene.flush();
         while (running) {
-            glfwPollEvents();
-            if (glfwWindowShouldClose(window)) {
-                running = false;
+            final var newTime = Time.getTime();
+            final var frameTime = newTime - currentTime;
+            currentTime = newTime;
+            accumulator += frameTime;
+
+            processInput();
+            while (accumulator >= targetUpdate) {
+                update();
+                accumulator -= targetUpdate;
             }
-            update();
-            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+            Time.setRenderDelta(frameTime);
             render();
-            glfwSwapBuffers(window);
         }
     }
 
     @Override
     public void run() {
         initWindow();
-
+        window.setClearColor(0.1f, 0.1f, 0.1f);
         glEnable(GL_DEPTH_TEST);
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-
-        initShader();
 
         init();
+        running = true;
         startGameLoop();
-    }
-
-    private void initTestMesh() {
-        var vertices = new float[] {
-                0.0f, 0.5f, -0.5f,
-                -0.5f, -0.5f, -0.5f,
-                0.5f, -0.5f, -0.5f,
-        };
-
-        var indices = new short[] {
-                0, 1, 2,
-        };
-
-        mesh = new Mesh().setVertices(vertices).setIndices(indices);
-    }
-
-    private void renderTestMesh() {
-        rawShader.bind();
-        rawShader.setUniform("projectionMatrix", getProjectionMatrix(90.0f,
-                windowSize.x,
-                windowSize.y,
-                0.01f,
-                100.0f));
-        rawShader.setUniform("viewMatrix", getViewMatrix(new Vector3f(0.0f, 0.0f, 1.0f),
-                new Quaternionf()));
-        rawShader.setUniform("modelMatrix", getModelMatrix(new Vector3f(),
-                new Quaternionf(),
-                new Vector3f(1.0f)));
-
-        mesh.render();
-    }
-
-    private void deleteTestMesh() {
-        mesh.destroy();
     }
 
     @Override
     public void close() {
         exit();
 
-        glfwFreeCallbacks(window);
-        glfwDestroyWindow(window);
-        glfwTerminate();
-        Objects.requireNonNull(glfwSetErrorCallback(null)).free();
+        window.destroy();
+        Window.terminate();
     }
 
     private void init() {
-        initTestMesh();
+        GameManager.install(scene);
     }
 
-    private void render() {
-        renderTestMesh();
+    private void processInput() {
+        window.pollEvents();
+        if (window.getShouldClose()) {
+            running = false;
+        }
     }
 
     private void update() {
+        scene.flush();
+        scene.foreachComp(Component::update);
+    }
 
+    private void render() {
+        window.clear();
+
+        scene.flush();
+        scene.foreachComp(Component::render);
+
+        window.swapBuffers();
     }
 
     private void exit() {
-        deleteTestMesh();
+        scene.clear();
     }
 
-    private static Matrix4fc getProjectionMatrix(final float fovDegrees,
-                                                 final int windowWidth,
-                                                 final int windowHeight,
-                                                 final float near,
-                                                 final float far) {
-        final var fovRad = (float) Math.toRadians(fovDegrees);
-        final var aspect = (float) windowWidth / windowHeight;
-        return projectionMatrix
-                .identity()
-                .perspective(fovRad, aspect, near, far);
+    public Window window() {
+        return window;
     }
 
-    private static Matrix4fc getViewMatrix(final Vector3fc cameraPosition,
-                                           final Quaternionfc cameraRotation) {
-        return viewMatrix
-                .identity()
-                .translate(-cameraPosition.x(), -cameraPosition.y(), -cameraPosition.z())
-                .rotate(cameraRotation.invert(new Quaternionf()));
-    }
-
-    private static Matrix4fc getModelMatrix(final Vector3fc position,
-                                            final Quaternionfc rotation,
-                                            final Vector3fc scale) {
-        return modelMatrix.
-                identity()
-                .translate(position)
-                .rotate(rotation)
-                .scale(scale);
-    }
 
 }

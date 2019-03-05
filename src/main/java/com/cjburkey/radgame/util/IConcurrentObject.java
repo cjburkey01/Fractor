@@ -10,4 +10,6 @@ public interface IConcurrentObject {
 
     int hashCode();
 
+    int maxPerObject();
+
 }
