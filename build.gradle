@@ -51,6 +51,7 @@ compileJava {
 }
 
 task runRadGame(type: JavaExec) {
+    jvmArgs = ['-Xms512m', '-Xmx512m']
     main = 'com.cjburkey.radgame.RadGame'
     classpath = sourceSets.main.runtimeClasspath
 }

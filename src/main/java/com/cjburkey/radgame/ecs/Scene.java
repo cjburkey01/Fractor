@@ -3,32 +3,35 @@ package com.cjburkey.radgame.ecs;
 import com.cjburkey.radgame.util.ConcurrentManager;
 import java.util.function.Consumer;
 
+@SuppressWarnings("WeakerAccess")
 public class Scene {
 
-    private byte KEY = (byte) 0;
+    private static final byte KEY = (byte) 0;
+
     private final ConcurrentManager<Byte, GameObject> objects = new ConcurrentManager<>();
 
     public GameObject createObject() {
-        GameObject obj = new GameObject();
+        final var obj = new GameObject();
         objects.queueAdd(KEY, obj);
         return obj;
     }
 
-    public GameObject createObjectWith(Component... components) {
-        var object = createObject();
+    @SuppressWarnings("UnusedReturnValue")
+    public GameObject createObjectWith(final Component... components) {
+        final var object = createObject();
         object.addComponents(components);
         return object;
     }
 
-    public void destroy(GameObject obj) {
+    public void destroy(final GameObject obj) {
         objects.queueRemove(KEY, obj);
     }
 
-    public void foreach(Consumer<GameObject> consumer) {
+    public void foreach(final Consumer<GameObject> consumer) {
         objects.foreach(consumer);
     }
 
-    public void foreachComp(Consumer<Component> consumer) {
+    public void foreachComp(final Consumer<Component> consumer) {
         foreach(obj -> obj.foreach(consumer));
     }
 

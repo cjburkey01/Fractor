@@ -5,6 +5,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
+import org.joml.Vector2f;
 import org.joml.Vector2fc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -15,6 +17,7 @@ import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryStack.*;
 
+@SuppressWarnings("WeakerAccess")
 public class Mesh {
 
     private static final int FLOATS_PER_VERTEX = 3;
@@ -145,6 +148,7 @@ public class Mesh {
 
         private final ArrayList<Vector3fc> vertices = new ArrayList<>();
         private final ArrayList<Short> indices = new ArrayList<>();
+        private final ArrayList<Vector2fc> uvs = new ArrayList<>();
         private final Mesh mesh;
         private short lastIndex = -1;
         private short maxIndex = -1;
@@ -195,6 +199,23 @@ public class Mesh {
             return vert(vertex.x(), vertex.y(), index);
         }
 
+        public MeshBuilder uv(final float x, final float y, final short index) {
+            CollectionHelper.setItemInList(uvs, index, new Vector2f(x, y));
+            return this;
+        }
+
+        public MeshBuilder uv(final float x, final float y) {
+            return uv(x, y, lastIndex);
+        }
+
+        public MeshBuilder uv(final Vector2fc uv, final short index) {
+            return uv(uv.x(), uv.y(), index);
+        }
+
+        public MeshBuilder uv(final Vector2fc uv) {
+            return uv(uv.x(), uv.y());
+        }
+
         public MeshBuilder verts(final short... indices) {
             final var start = this.indices.size();
             for (int i = 0; i < indices.length; i++) {
@@ -231,6 +252,7 @@ public class Mesh {
             try (MemoryStack stack = stackPush()) {
                 final var vertices = stack.malloc(this.vertices.size() * Float.BYTES * FLOATS_PER_VERTEX);
                 final var indices = stack.malloc(this.indices.size() * Short.BYTES);
+                final var uvs = stack.malloc(this.uvs.size() * Float.BYTES * 2);
 
                 for (int i = 0; i < this.vertices.size(); i++) {
                     final var vert = this.vertices.get(i);
@@ -244,16 +266,24 @@ public class Mesh {
                 }
                 for (int i = 0; i < this.indices.size(); i++) {
                     final var index = this.indices.get(i);
-                    if (index == null) {
-                        indices.putShort(i * Short.BYTES, (short) 0);
+                    indices.putShort(i * Short.BYTES, Objects.requireNonNullElseGet(index, () -> (short) 0));
+                }
+                for (int i = 0; i < this.uvs.size(); i++) {
+                    final var uv = this.uvs.get(i);
+                    if (uv == null) {
+                        uvs.putFloat(i * Float.BYTES * 2, 0.0f);
+                        uvs.putFloat(i * Float.BYTES * 2 + Float.BYTES, 0.0f);
                     } else {
-                        indices.putShort(i * Short.BYTES, index);
+                        uv.get(i * Float.BYTES * 2, uvs);
                     }
                 }
 
                 if (clearCurrentMesh) mesh.clear();
                 mesh.setVertices(vertices);
                 mesh.setIndices(indices);
+                if (this.uvs.size() > 0) {
+                    mesh.buffer("uvbo", uvs, GL_ARRAY_BUFFER, GL_STATIC_DRAW, 1, 2, GL_FLOAT);
+                }
             }
 
             vertices.clear();

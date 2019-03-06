@@ -1,10 +1,13 @@
 package com.cjburkey.radgame;
 
 import com.cjburkey.radgame.util.IO;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("WeakerAccess")
 public class ResourceLocation {
 
     public final String domain;
@@ -22,6 +25,12 @@ public class ResourceLocation {
 
     public ResourceLocation(String domain, String path) {
         this(domain, path, null);
+    }
+
+    public InputStream getStream() throws FileNotFoundException {
+        var stream = ClassLoader.getSystemResourceAsStream(getFullPath());
+        if (stream == null) throw new FileNotFoundException("Resource not found: \"" + getFullPath() + "\"");
+        return stream;
     }
 
     public String readResource() throws IOException {
