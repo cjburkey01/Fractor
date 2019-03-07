@@ -5,6 +5,7 @@ import com.cjburkey.radgame.component.Camera;
 import com.cjburkey.radgame.component.render.MaterialRenderer;
 import com.cjburkey.radgame.component.render.MeshRenderer;
 import com.cjburkey.radgame.ecs.Component;
+import com.cjburkey.radgame.ecs.GameObject;
 import com.cjburkey.radgame.ecs.Scene;
 import com.cjburkey.radgame.gl.Texture;
 import com.cjburkey.radgame.gl.shader.Shader;
@@ -25,6 +26,8 @@ public class GameManager extends Component {
     private static Shader whiteShader;
     private static Shader texShader;
 
+    private GameObject objTest;
+
     @Override
     public void onLoad() {
         glEnable(GL_TEXTURE);
@@ -39,39 +42,9 @@ public class GameManager extends Component {
         scene.createObjectWith(new Camera());    // Create main camera
 
         // Test mesh object
-        /*{
-            MaterialRenderer materialRenderer = new MaterialRenderer();
-            MeshRenderer meshRenderer = new MeshRenderer();
-
-            meshRenderer.mesh
-                    .start()
-                    //  1---0
-                    //  |  /|
-                    //  | / |
-                    //  |/  |
-                    //  2---3
-                    //
-                    //  Triangles:  0, 1, 2
-                    //              0, 2, 3
-                    .vert(0.5f, 0.5f)       // 0
-                    .vert(-0.5f, 0.5f)      // 1
-                    .vert(-0.5f, -0.5f)     // 2
-                    .verts(0, 2)
-                    .vert(0.5f, -0.5f)      // 3
-                    .end();
-
-            materialRenderer.material = new TransformingMaterial(whiteShader) {
-                protected void updateUniforms(Transform transform) {
-                }
-            };
-
-            scene.createObjectWith(materialRenderer, meshRenderer);
-        }*/
-
-        // Test mesh object
         {
-            MaterialRenderer materialRenderer = new MaterialRenderer();
-            MeshRenderer meshRenderer = new MeshRenderer();
+            final var materialRenderer = new MaterialRenderer();
+            final var meshRenderer = new MeshRenderer();
 
             meshRenderer.mesh
                     .start()
@@ -92,7 +65,7 @@ public class GameManager extends Component {
                     .vert(0.5f, -0.5f).uv(1.0f, 1.0f)       // 3
                     .end();
 
-            var texMat = new TexturedTransform(texShader);
+            final var texMat = new TexturedTransform(texShader);
             materialRenderer.material = texMat;
             try {
                 texMat.texture = Texture.readStream(new ResourceLocation("radgame", "texture/test", "png").getStream());
@@ -100,19 +73,20 @@ public class GameManager extends Component {
                 e.printStackTrace();
             }
 
-            scene.createObjectWith(materialRenderer, meshRenderer);
+            objTest = scene.createObjectWith(materialRenderer, meshRenderer);
         }
     }
 
     @Override
     public void onRemove() {
         whiteShader.close();
+        texShader.close();
     }
 
     private static void initShaders() throws IOException {
         whiteShader = Shader.builder()
-                .setVertexShader(new ResourceLocation("radgame", "shader/vertShader", "glsl"))
-                .setFragmentShader(new ResourceLocation("radgame", "shader/fragShader", "glsl"))
+                .setVertexShader(new ResourceLocation("radgame", "shader/whiteVert", "glsl"))
+                .setFragmentShader(new ResourceLocation("radgame", "shader/whiteFrag", "glsl"))
                 .addUniforms("projectionMatrix", "viewMatrix", "modelMatrix")
                 .build();
         texShader = Shader.builder()

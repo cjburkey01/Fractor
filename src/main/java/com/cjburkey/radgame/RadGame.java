@@ -69,6 +69,8 @@ public class RadGame implements Runnable, Closeable {
         initWindow();
         window.setClearColor(0.1f, 0.1f, 0.1f);
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
 
         init();
         running = true;

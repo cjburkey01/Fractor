@@ -85,14 +85,14 @@ public class Shader implements AutoCloseable {
         }
     }
 
-    public boolean hasUniform(String name) {
-        return uniformLocations.containsKey(name);
+    public boolean lacksUniform(String name) {
+        return !uniformLocations.containsKey(name);
     }
 
     private int getUniformLocation(String name) {
         bind();
         int loc = uniformLocations.getOrDefault(name, -1);
-        if (loc < 0) System.err.println("Failed to locate uniform: \"" + name + "\"");
+        if (loc < 0) System.err.printf("Failed to locate uniform: \"%s\"\n", name);
         return loc;
     }
 
@@ -109,6 +109,7 @@ public class Shader implements AutoCloseable {
         return new ShaderBuilder();
     }
 
+    @SuppressWarnings("WeakerAccess")
     public static final class ShaderBuilder {
 
         private String vertexShader;

@@ -16,7 +16,6 @@ public class Scene {
         return obj;
     }
 
-    @SuppressWarnings("UnusedReturnValue")
     public GameObject createObjectWith(final Component... components) {
         final var object = createObject();
         object.addComponents(components);

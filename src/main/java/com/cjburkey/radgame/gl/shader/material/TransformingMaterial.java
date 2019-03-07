@@ -16,6 +16,11 @@ public abstract class TransformingMaterial extends Material {
 
     public TransformingMaterial(Shader shader) {
         super(shader);
+        if (shader.lacksUniform("projectionMatrix") ||
+                shader.lacksUniform("viewMatrix") ||
+                shader.lacksUniform("modelMatrix")) {
+            throw new IllegalArgumentException("Shader for transforming material requires a projection matrix, view matrix, and model matrix uniform");
+        }
     }
 
     public void updateProjection(Window window, Camera camera) {

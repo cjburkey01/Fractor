@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
+@SuppressWarnings("WeakerAccess")
 public final class GameObject implements IConcurrentObject {
 
     private final ConcurrentManager<Class<? extends Component>, Component> components = new ConcurrentManager<>();
@@ -17,7 +18,7 @@ public final class GameObject implements IConcurrentObject {
     }
 
     public <T extends Component> T addComponent(T component) {
-        if (component.parent() != null) return null;
+        if (component.parent() != null) return component;
         components.queueAdd(component.getClass(), component);
         component.setParent(this);
         return component;
@@ -32,7 +33,7 @@ public final class GameObject implements IConcurrentObject {
     }
 
     public <T extends Component> T removeComponent(T component) {
-        if (component.parent() == null) return null;
+        if (component.parent() == null) return component;
         components.queueRemove(component.getClass(), component);
         return component;
     }
@@ -63,6 +64,7 @@ public final class GameObject implements IConcurrentObject {
         flush();
     }
 
+    @Override
     public int maxPerObject() {
         return Integer.MAX_VALUE;
     }

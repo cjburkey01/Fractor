@@ -13,6 +13,9 @@ public class TexturedTransform extends TransformingMaterial {
 
     public TexturedTransform(Shader shader) {
         super(shader);
+        if (shader.lacksUniform("tex")) {
+            throw new IllegalArgumentException("Shader for textured material requires a tex uniform");
+        }
     }
 
     protected void updateUniforms(Transform transform) {

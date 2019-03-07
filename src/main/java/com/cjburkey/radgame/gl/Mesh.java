@@ -248,11 +248,19 @@ public class Mesh {
             return maxIndex;
         }
 
+        private void reset() {
+            vertices.clear();
+            indices.clear();
+            uvs.clear();
+            lastIndex = -1;
+            maxIndex = -1;
+        }
+
         public Mesh end(final boolean clearCurrentMesh) {
             try (MemoryStack stack = stackPush()) {
                 final var vertices = stack.malloc(this.vertices.size() * Float.BYTES * FLOATS_PER_VERTEX);
                 final var indices = stack.malloc(this.indices.size() * Short.BYTES);
-                final var uvs = stack.malloc(this.uvs.size() * Float.BYTES * 2);
+                final var uvs = ((this.uvs.size() > 0) ? (stack.malloc(this.uvs.size() * Float.BYTES * 2)) : null);
 
                 for (int i = 0; i < this.vertices.size(); i++) {
                     final var vert = this.vertices.get(i);
@@ -268,26 +276,26 @@ public class Mesh {
                     final var index = this.indices.get(i);
                     indices.putShort(i * Short.BYTES, Objects.requireNonNullElseGet(index, () -> (short) 0));
                 }
-                for (int i = 0; i < this.uvs.size(); i++) {
-                    final var uv = this.uvs.get(i);
-                    if (uv == null) {
-                        uvs.putFloat(i * Float.BYTES * 2, 0.0f);
-                        uvs.putFloat(i * Float.BYTES * 2 + Float.BYTES, 0.0f);
-                    } else {
-                        uv.get(i * Float.BYTES * 2, uvs);
+                if (uvs != null) {
+                    for (int i = 0; i < this.uvs.size(); i++) {
+                        final var uv = this.uvs.get(i);
+                        if (uv == null) {
+                            uvs.putFloat(i * Float.BYTES * 2, 0.0f);
+                            uvs.putFloat(i * Float.BYTES * 2 + Float.BYTES, 0.0f);
+                        } else {
+                            uv.get(i * Float.BYTES * 2, uvs);
+                        }
                     }
                 }
 
                 if (clearCurrentMesh) mesh.clear();
                 mesh.setVertices(vertices);
                 mesh.setIndices(indices);
-                if (this.uvs.size() > 0) {
+                if (uvs != null) {
                     mesh.buffer("uvbo", uvs, GL_ARRAY_BUFFER, GL_STATIC_DRAW, 1, 2, GL_FLOAT);
                 }
             }
-
-            vertices.clear();
-            indices.clear();
+            reset();
             return mesh;
         }
 

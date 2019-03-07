@@ -90,6 +90,21 @@ public class Texture implements AutoCloseable {
         return texture;
     }
 
+    private static int getImageType(int channelCount) {
+        switch (channelCount) {
+            case 1:
+                return GL_RED;
+            case 2:
+                return GL_RG;
+            case 3:
+                return GL_RGB;
+            case 4:
+                return GL_RGBA;
+            default:
+                throw new IllegalStateException("Invalid image channel count: " + channelCount);
+        }
+    }
+
     public static Texture readStream(final int bindLocation,
                                      final InputStream stream,
                                      final int minFilter,
@@ -103,18 +118,12 @@ public class Texture implements AutoCloseable {
             final var height = stack.mallocInt(1);
             final var channels = stack.mallocInt(1);
             rawImgBuffer = stbi_load_from_memory(rawFileBuffer, width, height, channels, 0);
-            memFree(rawFileBuffer);
             if (rawImgBuffer == null) {
                 throw new IOException(stbi_failure_reason());
             }
-            var imageType = 0;
 
             final var channelCount = channels.get(0);
-            if (channelCount == 1) imageType = GL_RED;
-            else if (channelCount == 2) imageType = GL_RG;
-            else if (channelCount == 3) imageType = GL_RGB;
-            else if (channelCount == 4) imageType = GL_RGBA;
-            else throw new IllegalStateException("Invalid image channel count: " + channelCount);
+            final var imageType = getImageType(channelCount);
 
             return readRawTexture(bindLocation,
                     width.get(0),
@@ -127,6 +136,7 @@ public class Texture implements AutoCloseable {
                     mipmap);
         } finally {
             if (rawImgBuffer != null) stbi_image_free(rawImgBuffer);
+            memFree(rawFileBuffer);
         }
     }
 
