@@ -152,6 +152,7 @@ public class Mesh {
         private final Mesh mesh;
         private short lastIndex = -1;
         private short maxIndex = -1;
+        private short subStart = 0;
 
         private MeshBuilder(final Mesh mesh) {
             this.mesh = mesh;
@@ -159,7 +160,7 @@ public class Mesh {
 
         public MeshBuilder vert(final float x, final float y, final float z, final short index) {
             CollectionHelper.setItemInList(vertices, index, new Vector3f(x, y, z));
-            index(index);
+            index((short) (index - subStart));
             return this;
         }
 
@@ -231,9 +232,10 @@ public class Mesh {
         }
 
         private void index(final int at, final short value) {
-            if (value > maxIndex) maxIndex = value;
-            lastIndex = value;
-            CollectionHelper.setItemInList(this.indices, at, value);
+            final var trueValue = (short) (value + subStart);
+            if (trueValue > maxIndex) maxIndex = trueValue;
+            lastIndex = trueValue;
+            CollectionHelper.setItemInList(this.indices, at, trueValue);
         }
 
         private void index(final short value) {
@@ -254,6 +256,18 @@ public class Mesh {
             uvs.clear();
             lastIndex = -1;
             maxIndex = -1;
+            subStart = 0;
+        }
+
+        // Begins a "submesh" state in which index "0" refers to the index following the previous maximum index.
+        public MeshBuilder startSubMesh() {
+            subStart = (short) (maxIndex + 1);
+            return this;
+        }
+
+        public MeshBuilder endSubMesh() {
+            subStart = 0;
+            return this;
         }
 
         public Mesh end(final boolean clearCurrentMesh) {

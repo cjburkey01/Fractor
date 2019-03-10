@@ -2,15 +2,18 @@ package com.cjburkey.radgame.game;
 
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.component.Camera;
-import com.cjburkey.radgame.component.render.MaterialRenderer;
-import com.cjburkey.radgame.component.render.MeshRenderer;
 import com.cjburkey.radgame.ecs.Component;
 import com.cjburkey.radgame.ecs.GameObject;
 import com.cjburkey.radgame.ecs.Scene;
 import com.cjburkey.radgame.gl.Texture;
+import com.cjburkey.radgame.gl.TextureAtlas;
 import com.cjburkey.radgame.gl.shader.Shader;
-import com.cjburkey.radgame.gl.shader.material.TexturedTransform;
+import com.cjburkey.radgame.voxel.TexturedVoxel;
+import com.cjburkey.radgame.voxel.chunk.DefaultVoxelChunkGenerator;
+import com.cjburkey.radgame.voxel.chunk.VoxelChunkMesher;
+import com.cjburkey.radgame.voxel.world.VoxelWorld;
 import java.io.IOException;
+import org.joml.Vector2i;
 
 import static org.lwjgl.opengl.GL13.*;
 
@@ -40,40 +43,28 @@ public class GameManager extends Component {
         }
 
         scene.createObjectWith(new Camera());    // Create main camera
+        Camera.main.halfHeight = 6.5f;
 
-        // Test mesh object
         {
-            final var materialRenderer = new MaterialRenderer();
-            final var meshRenderer = new MeshRenderer();
-
-            meshRenderer.mesh
-                    .start()
-                    /*
-                        1---0
-                        |  /|
-                        | / |
-                        |/  |
-                        2---3
-                    
-                        Triangles:  0, 1, 2
-                                    0, 2, 3
-                     */
-                    .vert(0.5f, 0.5f).uv(1.0f, 0.0f)        // 0
-                    .vert(-0.5f, 0.5f).uv(0.0f, 0.0f)       // 1
-                    .vert(-0.5f, -0.5f).uv(0.0f, 1.0f)      // 2
-                    .verts(0, 2)
-                    .vert(0.5f, -0.5f).uv(1.0f, 1.0f)       // 3
-                    .end();
-
-            final var texMat = new TexturedTransform(texShader);
-            materialRenderer.material = texMat;
+            final TextureAtlas atlas;
             try {
-                texMat.texture = Texture.readStream(new ResourceLocation("radgame", "texture/test", "png").getStream());
+                atlas = new TextureAtlas(
+                        Texture.readStream(new ResourceLocation("radgame", "texture/test", "png").getStream()),
+                        1);
             } catch (IOException e) {
                 e.printStackTrace();
+                return;
             }
+            final var stone = new TexturedVoxel(new ResourceLocation("radgame", "voxel/stone"), new Vector2i(0, 0));
 
-            objTest = scene.createObjectWith(materialRenderer, meshRenderer);
+            final var world = new VoxelWorld(scene, new DefaultVoxelChunkGenerator(), texShader, atlas);
+            final var chunkA = world.getOrGenChunk(new Vector2i());
+            for (int y = 0; y < 5; y++) {
+                for (int x = 0; x < 5; x++) {
+                    world.setVoxel(x, y, 1, stone);
+                }
+            }
+            VoxelChunkMesher.generateMesh(chunkA);
         }
     }
 

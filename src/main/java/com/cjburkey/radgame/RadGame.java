@@ -25,7 +25,7 @@ public class RadGame implements Runnable, Closeable {
         System.setProperty("joml.sinLookup", "false");
         System.setProperty("joml.sinLookup.bits", "14");
         System.setProperty("joml.format", "true");
-        System.setProperty("joml.format.decimals", "3");
+        System.setProperty("joml.format.decimals", "2");
     }
 
     public static void main(String[] args) {

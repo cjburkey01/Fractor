@@ -5,11 +5,14 @@ import com.cjburkey.radgame.util.ConcurrentManager;
 import com.cjburkey.radgame.util.IConcurrentObject;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 @SuppressWarnings("WeakerAccess")
 public final class GameObject implements IConcurrentObject {
 
+    private final UUID uuid = UUID.randomUUID();
     private final ConcurrentManager<Class<? extends Component>, Component> components = new ConcurrentManager<>();
 
     public final Transform transform = addComponent(new Transform());
@@ -79,6 +82,17 @@ public final class GameObject implements IConcurrentObject {
 
     public void flush() {
         components.flush();
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GameObject that = (GameObject) o;
+        return uuid.equals(that.uuid);
+    }
+
+    public int hashCode() {
+        return Objects.hash(uuid);
     }
 
 }
