@@ -14,7 +14,7 @@ public class ResourceLocation {
     public final String path;
     public final String extension;
 
-    public ResourceLocation(String domain, String path, String extension) {
+    public ResourceLocation(final String domain, String path, final String extension) {
         this.domain = domain.trim();
         path = path.trim().replace('\\', '/');
         while (path.startsWith("/")) path = path.substring(1);
@@ -23,7 +23,7 @@ public class ResourceLocation {
         this.extension = extension;
     }
 
-    public ResourceLocation(String domain, String path) {
+    public ResourceLocation(final String domain, final String path) {
         this(domain, path, null);
     }
 
@@ -42,6 +42,7 @@ public class ResourceLocation {
         return String.format("assets/%s/%s", domain, path);
     }
 
+    @Override
     public String toString() {
         if (extension != null) return String.format("%s:%s.%s", domain, path, extension);
         return String.format("%s:%s", domain, path);
@@ -62,13 +63,13 @@ public class ResourceLocation {
         return Objects.hash(domain, path, extension);
     }
 
-    public static ResourceLocation fromString(String location, boolean extension) {
-        var spl = location.split(Pattern.quote(":"));
+    public static ResourceLocation fromString(final String location, final boolean extension) {
+        final var spl = location.split(Pattern.quote(":"));
         if (spl.length != 2) return null;
-        var domain = spl[0];
-        var pathExt = spl[1];
+        final var domain = spl[0];
+        final var pathExt = spl[1];
         if (extension) {
-            var extPer = pathExt.lastIndexOf('.');
+            final var extPer = pathExt.lastIndexOf('.');
             if (extPer >= 0) {
                 return new ResourceLocation(domain, pathExt.substring(0, extPer), pathExt.substring(extPer + 1));
             }

@@ -18,6 +18,7 @@ public class TexturedTransform extends TransformingMaterial {
         }
     }
 
+    @Override
     protected void updateUniforms(Transform transform) {
         shader.setUniform("tex", 0);
         if (texture != null) texture.bind();

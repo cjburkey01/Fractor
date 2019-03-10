@@ -16,6 +16,7 @@ import org.lwjgl.system.MemoryStack;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryStack.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 @SuppressWarnings("WeakerAccess")
 public class Mesh {
@@ -271,11 +272,10 @@ public class Mesh {
         }
 
         public Mesh end(final boolean clearCurrentMesh) {
-            try (MemoryStack stack = stackPush()) {
-                final var vertices = stack.malloc(this.vertices.size() * Float.BYTES * FLOATS_PER_VERTEX);
-                final var indices = stack.malloc(this.indices.size() * Short.BYTES);
-                final var uvs = ((this.uvs.size() > 0) ? (stack.malloc(this.uvs.size() * Float.BYTES * 2)) : null);
-
+            final var vertices = memAlloc(this.vertices.size() * Float.BYTES * FLOATS_PER_VERTEX);
+            final var indices = memAlloc(this.indices.size() * Short.BYTES);
+            final var uvs = ((this.uvs.size() > 0) ? (memAlloc(this.uvs.size() * Float.BYTES * 2)) : null);
+            try {
                 for (int i = 0; i < this.vertices.size(); i++) {
                     final var vert = this.vertices.get(i);
                     if (vert == null) {
@@ -308,6 +308,10 @@ public class Mesh {
                 if (uvs != null) {
                     mesh.buffer("uvbo", uvs, GL_ARRAY_BUFFER, GL_STATIC_DRAW, 1, 2, GL_FLOAT);
                 }
+            } finally {
+                memFree(vertices);
+                memFree(indices);
+                memFree(uvs);
             }
             reset();
             return mesh;

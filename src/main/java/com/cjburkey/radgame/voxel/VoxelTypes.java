@@ -5,11 +5,6 @@ package com.cjburkey.radgame.voxel;
  */
 public final class VoxelTypes {
 
-    private static boolean init;
-
-    public static void init() {
-        if (init) return;
-        init = true;
-    }
+    public static final TexturedSquareVoxel STONE = new TexturedSquareVoxel("radgame:voxel/stone", "radgame:texture/voxel/stone.png");
 
 }

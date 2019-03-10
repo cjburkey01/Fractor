@@ -64,6 +64,7 @@ public final class VoxelState {
         return isAir;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -74,6 +75,7 @@ public final class VoxelState {
                 Objects.equals(posInChunk, that.posInChunk);
     }
 
+    @Override
     public int hashCode() {
         return Objects.hash(voxel, chunk, posInChunk, isAir);
     }

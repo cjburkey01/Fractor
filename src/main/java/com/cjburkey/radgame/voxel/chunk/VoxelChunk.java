@@ -113,6 +113,7 @@ public final class VoxelChunk {
         return i * CHUNK_SIZE * CHUNK_SIZE + y * CHUNK_SIZE + x;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -123,6 +124,7 @@ public final class VoxelChunk {
                 gameObject.equals(that.gameObject);
     }
 
+    @Override
     public int hashCode() {
         return Objects.hash(chunkPos, posInWorld, scene, gameObject);
     }

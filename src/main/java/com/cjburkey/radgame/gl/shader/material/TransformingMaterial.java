@@ -23,15 +23,18 @@ public abstract class TransformingMaterial extends Material {
         }
     }
 
+    @Override
     public void updateProjection(Window window, Camera camera) {
         shader.setUniform("projectionMatrix", getOrthographicMatrix(camera.halfHeight, window.getAspectRatio()));
     }
 
+    @Override
     public void updateView(Camera camera) {
         final var camTransform = camera.parent().transform;
         shader.setUniform("viewMatrix", getViewMatrix(camTransform.position, camTransform.rotation));
     }
 
+    @Override
     public void updateObject(Transform transform) {
         shader.setUniform("modelMatrix", getModelMatrix(transform.position, transform.rotation, transform.scale));
         updateUniforms(transform);

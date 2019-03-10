@@ -84,6 +84,7 @@ public final class GameObject implements IConcurrentObject {
         components.flush();
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -91,6 +92,7 @@ public final class GameObject implements IConcurrentObject {
         return uuid.equals(that.uuid);
     }
 
+    @Override
     public int hashCode() {
         return Objects.hash(uuid);
     }

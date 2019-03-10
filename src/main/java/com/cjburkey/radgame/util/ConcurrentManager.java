@@ -88,10 +88,12 @@ public final class ConcurrentManager<K, T extends IConcurrentObject> {
             this.object = object;
         }
 
+        @Override
         public int hashCode() {
             return key.hashCode();
         }
 
+        @Override
         @SuppressWarnings("unchecked")
         public boolean equals(Object other) {
             if (other instanceof ConcurrentManager.QueuedObject) {

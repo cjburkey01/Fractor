@@ -6,10 +6,12 @@ public interface IConcurrentObject {
 
     void onRemove();
 
+    int maxPerObject();
+
+    @Override
     boolean equals(Object other);
 
+    @Override
     int hashCode();
-
-    int maxPerObject();
 
 }
