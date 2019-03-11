@@ -1,6 +1,6 @@
 package com.cjburkey.radgame.ecs;
 
-import com.cjburkey.radgame.util.ConcurrentManager;
+import com.cjburkey.radgame.util.collection.ConcurrentManager;
 import java.util.function.Consumer;
 
 @SuppressWarnings("WeakerAccess")

@@ -1,12 +1,12 @@
 package com.cjburkey.radgame.gl.shader;
 
 import com.cjburkey.radgame.ResourceLocation;
+import com.cjburkey.radgame.util.io.Log;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.io.IOException;
 import java.nio.FloatBuffer;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import org.joml.Matrix3fc;
 import org.joml.Matrix4fc;
 import org.joml.Vector2fc;
@@ -21,11 +21,12 @@ public class Shader implements AutoCloseable {
 
     private static int currentProgram = -1;
     private final int shaderProgram;
-    private final HashMap<String, Integer> uniformLocations;
+    private final Object2IntOpenHashMap<String> uniformLocations;
 
-    private Shader(final int shaderProgram, final HashMap<String, Integer> uniformLocations) {
+    private Shader(final int shaderProgram, final Object2IntOpenHashMap<String> uniformLocations) {
         this.shaderProgram = shaderProgram;
-        this.uniformLocations = new HashMap<>(uniformLocations);
+        this.uniformLocations = new Object2IntOpenHashMap<>(uniformLocations);
+        this.uniformLocations.defaultReturnValue(-1);
     }
 
     public void setUniform(String name, int value) {
@@ -91,8 +92,8 @@ public class Shader implements AutoCloseable {
 
     private int getUniformLocation(String name) {
         bind();
-        int loc = uniformLocations.getOrDefault(name, -1);
-        if (loc < 0) System.err.printf("Failed to locate uniform: \"%s\"\n", name);
+        int loc = uniformLocations.getInt(name);
+        if (loc < 0) Log.error("Failed to locate uniform: \"{}\"", name);
         return loc;
     }
 
@@ -114,7 +115,7 @@ public class Shader implements AutoCloseable {
 
         private String vertexShader;
         private String fragmentShader;
-        private final List<String> uniforms = new ArrayList<>();
+        private final ObjectArrayList<String> uniforms = new ObjectArrayList<>();
 
         private ShaderBuilder() {
         }
@@ -160,11 +161,11 @@ public class Shader implements AutoCloseable {
             glDeleteShader(vertexShader);
             glDeleteShader(fragmentShader);
 
-            HashMap<String, Integer> uniformLocations = new HashMap<>();
+            Object2IntOpenHashMap<String> uniformLocations = new Object2IntOpenHashMap<>();
             for (String uniform : uniforms) {
                 int loc = glGetUniformLocation(shaderProgram, uniform);
                 if (loc >= 0) uniformLocations.put(uniform, loc);
-                else System.err.printf("Failed to locate uniform: \"%s\"\n", uniform);
+                else Log.error("Failed to locate uniform: \"{}\"", uniform);
             }
 
             return new Shader(shaderProgram, uniformLocations);
@@ -175,7 +176,7 @@ public class Shader implements AutoCloseable {
             glCompileShader(shader);
             String error = glGetShaderInfoLog(shader).trim();
             if (!error.isEmpty()) {
-                System.err.println("Shader compile error: " + error);
+                Log.error("Shader compile error: {}", error);
                 return true;
             }
             glAttachShader(program, shader);
@@ -185,12 +186,12 @@ public class Shader implements AutoCloseable {
         private static boolean link(int program) {
             glValidateProgram(program);
             String error = glGetProgramInfoLog(program).trim();
-            if (!error.isEmpty()) System.err.println("Shader program validate error: " + error);
+            if (!error.isEmpty()) Log.error("Shader program validate error: {}", error);
 
             glLinkProgram(program);
             error = glGetProgramInfoLog(program).trim();
             if (!error.isEmpty()) {
-                System.err.println("Shader program link error: " + error);
+                Log.error("Shader program link error: {}", error);
                 return false;
             }
             return true;

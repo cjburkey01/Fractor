@@ -1,8 +1,8 @@
 package com.cjburkey.radgame.gl.shader;
 
-import com.cjburkey.radgame.Window;
 import com.cjburkey.radgame.component.Camera;
 import com.cjburkey.radgame.component.Transform;
+import com.cjburkey.radgame.glfw.Window;
 
 public abstract class Material {
 

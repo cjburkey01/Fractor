@@ -1,9 +1,9 @@
 package com.cjburkey.radgame.util.registry;
 
 import com.cjburkey.radgame.ResourceLocation;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -12,7 +12,7 @@ import java.util.function.Consumer;
  */
 public class Registry<T extends IRegistryItem> {
 
-    private final HashMap<ResourceLocation, T> items = new HashMap<>();
+    private final Object2ObjectOpenHashMap<ResourceLocation, T> items = new Object2ObjectOpenHashMap<>();
     private boolean finished;
 
     public void registerItem(T item) {

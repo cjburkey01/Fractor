@@ -1,4 +1,4 @@
-package com.cjburkey.radgame;
+package com.cjburkey.radgame.glfw;
 
 import java.util.Objects;
 import org.joml.Vector2i;
@@ -14,9 +14,10 @@ import static org.lwjgl.system.MemoryUtil.*;
 /**
  * Created by CJ Burkey on 2019/03/03
  */
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class Window {
 
-    private long window;
+    long window;
     private final Vector2i windowSize = new Vector2i();
     private final Vector2i windowPos = new Vector2i();
     private final Vector3f clearColor = new Vector3f();
@@ -46,7 +47,7 @@ public class Window {
 
         window = glfwCreateWindow(windowSize.x, windowSize.y, title, NULL, NULL);
         if (window == NULL) {
-            throw new IllegalStateException("Failed to initialize window");
+            throw new IllegalStateException("Failed to initialize GLFW window");
         }
 
         glfwMakeContextCurrent(window);
@@ -58,6 +59,7 @@ public class Window {
             aspectRatio = (float) w / h;
         });
         glfwSetWindowPosCallback(window, (win, x, y) -> windowPos.set(x, y));
+        Input.init(this);
 
         setVsync(true);
     }
@@ -82,6 +84,7 @@ public class Window {
     }
 
     public void pollEvents() {
+        Input.update();
         glfwPollEvents();
         shouldClose = glfwWindowShouldClose(window);
     }
@@ -144,6 +147,10 @@ public class Window {
         return windowSize.y;
     }
 
+    public float getAspectRatio() {
+        return aspectRatio;
+    }
+
     public int getPosX() {
         return windowPos.x;
     }
@@ -171,10 +178,6 @@ public class Window {
 
     public boolean getVsync() {
         return vsync;
-    }
-
-    public float getAspectRatio() {
-        return aspectRatio;
     }
 
     public Vector3f getClearColor() {

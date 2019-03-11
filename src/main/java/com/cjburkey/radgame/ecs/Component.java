@@ -1,21 +1,20 @@
 package com.cjburkey.radgame.ecs;
 
-import com.cjburkey.radgame.util.IConcurrentObject;
+import com.cjburkey.radgame.util.collection.IConcurrentObject;
 
 public abstract class Component implements IConcurrentObject {
 
     private GameObject parent;
-    protected int maxPerObject = Integer.MAX_VALUE;
 
     // Called when the object has been recognized as part of the Scene
     @Override
     public void onLoad() {
     }
 
-    public void update() {
+    public void onUpdate() {
     }
 
-    public void render() {
+    public void onRender() {
     }
 
     // Called just before the object is removed from the scene
@@ -25,7 +24,7 @@ public abstract class Component implements IConcurrentObject {
 
     @Override
     public final int maxPerObject() {
-        return maxPerObject;
+        return 1;
     }
 
     void setParent(GameObject parent) {

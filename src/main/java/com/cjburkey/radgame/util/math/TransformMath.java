@@ -1,24 +1,26 @@
-package com.cjburkey.radgame.util;
+package com.cjburkey.radgame.util.math;
 
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
+import org.joml.Vector2f;
+import org.joml.Vector2fc;
 import org.joml.Vector3fc;
 
 /**
  * Created by CJ Burkey on 2019/03/03
  */
-public class TransformMath {
+public final class TransformMath {
 
-    private static Matrix4f projectionMatrix = new Matrix4f();
-    private static Matrix4f viewMatrix = new Matrix4f();
-    private static Matrix4f modelMatrix = new Matrix4f();
+    private static final Matrix4f projectionMatrix = new Matrix4f();
+    private static final Matrix4f viewMatrix = new Matrix4f();
+    private static final Matrix4f modelMatrix = new Matrix4f();
 
-    public static Matrix4fc getProjectionMatrix(final float fovDegrees,
-                                                final float aspectRatio,
-                                                final float near,
-                                                final float far) {
+    public static Matrix4fc getPerspectiveMatrix(final float fovDegrees,
+                                                 final float aspectRatio,
+                                                 final float near,
+                                                 final float far) {
         final var fovRad = (float) Math.toRadians(fovDegrees);
         return projectionMatrix
                 .identity()
@@ -49,6 +51,12 @@ public class TransformMath {
                 .translate(position)
                 .rotate(rotation)
                 .scale(scale);
+    }
+
+    public static Vector2f screenToNormalized(final int windowWidth, final int windowHeight, final Vector2fc screen) {
+        final var x = Interpolate.map(screen.x(), 0, windowWidth, -1.0f, 1.0f);
+        final var y = Interpolate.map(screen.y(), 0, windowHeight, -1.0f, 1.0f);
+        return new Vector2f(x, y);
     }
 
 }

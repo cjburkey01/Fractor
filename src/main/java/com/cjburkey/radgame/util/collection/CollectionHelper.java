@@ -1,4 +1,4 @@
-package com.cjburkey.radgame.util;
+package com.cjburkey.radgame.util.collection;
 
 import java.util.List;
 

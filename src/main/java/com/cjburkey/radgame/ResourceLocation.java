@@ -1,6 +1,6 @@
 package com.cjburkey.radgame;
 
-import com.cjburkey.radgame.util.IO;
+import com.cjburkey.radgame.util.io.IOUtil;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +34,7 @@ public class ResourceLocation {
     }
 
     public String readResource() throws IOException {
-        return IO.readResource(getFullPath());
+        return IOUtil.readResource(getFullPath());
     }
 
     public String getFullPath() {

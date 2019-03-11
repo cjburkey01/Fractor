@@ -29,20 +29,17 @@ public class TexturedSquareVoxel extends Voxel {
         final var cy = voxelState.getPosInChunk().y();
         final var uv = voxelState.getWorld().getVoxelTextureAtlas().getUv(textureId);
 
-        // 0
-        mesh.vert(cx, cy + 1.0f).uv(uv.minX, uv.minY);
-
-        // 1
-        mesh.vert(cx, cy).uv(uv.minX, uv.maxY);
-
-        // 2
-        mesh.vert(cx + 1.0f, cy).uv(uv.maxX, uv.maxY);
-
-        // 0, 2
-        mesh.verts(0, 2);
-
-        // 3
-        mesh.vert(cx + 1.0f, cy + 1.0f).uv(uv.maxX, uv.minY);
+        mesh
+                // 0
+                .vert(cx, cy + 1.0f).uv(uv.minX, uv.minY)
+                // 1
+                .vert(cx, cy).uv(uv.minX, uv.maxY)
+                // 2
+                .vert(cx + 1.0f, cy).uv(uv.maxX, uv.maxY)
+                // 0, 2
+                .verts(0, 2)
+                // 3
+                .vert(cx + 1.0f, cy + 1.0f).uv(uv.maxX, uv.minY);
     }
 
     public ResourceLocation getTextureId() {

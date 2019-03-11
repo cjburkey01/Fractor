@@ -8,6 +8,7 @@ import org.joml.Vector2ic;
 /**
  * Created by CJ Burkey on 2019/03/06
  */
+@SuppressWarnings("unused")
 public final class VoxelState {
 
     public static final VoxelState AIR = new VoxelState();

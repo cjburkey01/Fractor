@@ -1,4 +1,4 @@
-package com.cjburkey.radgame.util;
+package com.cjburkey.radgame.util.io;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("WeakerAccess")
-public final class IO {
+public final class IOUtil {
 
     public static String readResource(final String resource) throws IOException {
         final var stream = ClassLoader.getSystemResourceAsStream(resource);

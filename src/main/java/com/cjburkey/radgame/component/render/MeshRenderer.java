@@ -14,7 +14,7 @@ public class MeshRenderer extends Component {
     public final Mesh mesh = new Mesh();
 
     @Override
-    public void render() {
+    public void onRender() {
         if (Camera.main == null) return;
 
         final var shaderRenderer = parent().getComponent(MaterialRenderer.class);

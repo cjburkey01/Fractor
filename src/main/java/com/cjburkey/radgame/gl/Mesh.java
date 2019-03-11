@@ -1,11 +1,14 @@
 package com.cjburkey.radgame.gl;
 
-import com.cjburkey.radgame.util.CollectionHelper;
+import com.cjburkey.radgame.util.collection.CollectionHelper;
+import com.cjburkey.radgame.util.io.Log;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.shorts.ShortArrayList;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Objects;
+import java.util.function.IntConsumer;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
 import org.joml.Vector3f;
@@ -27,8 +30,8 @@ public class Mesh {
     private final int vao;
     private final int ebo;
     private int triangles;
-    private final HashMap<String, Integer> buffers = new HashMap<>();
-    private final HashSet<Integer> attribs = new HashSet<>();
+    private final Object2IntOpenHashMap<String> buffers = new Object2IntOpenHashMap<>();
+    private final IntOpenHashSet attribs = new IntOpenHashSet();
 
     public Mesh() {
         vao = glGenVertexArrays();
@@ -75,7 +78,7 @@ public class Mesh {
         if (data == null) return;
         if (data.position() != 0) data.flip();
         if (data.position() != 0) {
-            System.err.printf("Invalid buffer starting at position: %s\n", data.position());
+            Log.error("Invalid buffer starting at position: {}", data.position());
             return;
         }
         bind();
@@ -106,9 +109,9 @@ public class Mesh {
 
     public void render() {
         bind();
-        attribs.forEach(GL20::glEnableVertexAttribArray);
+        attribs.forEach((IntConsumer) GL20::glEnableVertexAttribArray);
         glDrawElements(GL_TRIANGLES, triangles, GL_UNSIGNED_SHORT, 0L);
-        attribs.forEach(GL20::glDisableVertexAttribArray);
+        attribs.forEach((IntConsumer) GL20::glDisableVertexAttribArray);
     }
 
     public void clear() {
@@ -147,9 +150,9 @@ public class Mesh {
 
     public static final class MeshBuilder {
 
-        private final ArrayList<Vector3fc> vertices = new ArrayList<>();
-        private final ArrayList<Short> indices = new ArrayList<>();
-        private final ArrayList<Vector2fc> uvs = new ArrayList<>();
+        private final ObjectArrayList<Vector3fc> vertices = new ObjectArrayList<>();
+        private final ShortArrayList indices = new ShortArrayList();
+        private final ObjectArrayList<Vector2fc> uvs = new ObjectArrayList<>();
         private final Mesh mesh;
         private short lastIndex = -1;
         private short maxIndex = -1;
@@ -287,7 +290,7 @@ public class Mesh {
                     }
                 }
                 for (int i = 0; i < this.indices.size(); i++) {
-                    final var index = this.indices.get(i);
+                    final var index = this.indices.getShort(i);
                     indices.putShort(i * Short.BYTES, Objects.requireNonNullElseGet(index, () -> (short) 0));
                 }
                 if (uvs != null) {

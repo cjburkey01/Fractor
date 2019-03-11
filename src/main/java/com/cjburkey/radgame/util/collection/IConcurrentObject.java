@@ -1,4 +1,4 @@
-package com.cjburkey.radgame.util;
+package com.cjburkey.radgame.util.collection;
 
 public interface IConcurrentObject {
 

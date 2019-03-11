@@ -18,7 +18,7 @@ import org.joml.Vector2ic;
 /**
  * Created by CJ Burkey on 2019/03/08
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "unused"})
 public final class VoxelChunk {
 
     public static final int CHUNK_SIZE = 32;
@@ -56,23 +56,33 @@ public final class VoxelChunk {
         scene.destroy(gameObject);
     }
 
-    public void setVoxel(final Vector2ic posInChunk, final int i, final Voxel voxel) {
+    public void setVoxel(final Vector2ic posInChunk, final int i, final Voxel voxel, boolean update) {
         final var x = posInChunk.x();
         final var y = posInChunk.y();
 
         if (isInvalid(x, y, i)) return;
 
         final var index = index(x, y, i);
-        final var oldState = voxels[index];
-        if (oldState != null) oldState.getVoxel().onRemove(oldState);
+        if (update) {
+            final var oldState = voxels[index];
+            if (oldState != null) oldState.getVoxel().onRemove(oldState);
+        }
 
         final var newState = ((voxel == null) ? null : (new VoxelState(voxel, this, world, posInChunk, i)));
         voxels[index] = newState;
         if (newState != null) voxel.onAdd(newState);
     }
 
+    public void setVoxel(final Vector2ic posInChunk, final int i, final Voxel voxel) {
+        setVoxel(posInChunk, i, voxel, true);
+    }
+
+    public void setVoxel(final int x, final int y, final int i, final Voxel voxel, boolean update) {
+        setVoxel(new Vector2i(x, y), i, voxel, update);
+    }
+
     public void setVoxel(final int x, final int y, final int i, final Voxel voxel) {
-        setVoxel(new Vector2i(x, y), i, voxel);
+        setVoxel(x, y, i, voxel, true);
     }
 
     public VoxelState getVoxelState(final int x, final int y, final int i) {
@@ -113,20 +123,16 @@ public final class VoxelChunk {
         return i * CHUNK_SIZE * CHUNK_SIZE + y * CHUNK_SIZE + x;
     }
 
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         VoxelChunk that = (VoxelChunk) o;
         return chunkPos.equals(that.chunkPos) &&
-                posInWorld.equals(that.posInWorld) &&
-                scene.equals(that.scene) &&
-                gameObject.equals(that.gameObject);
+                posInWorld.equals(that.posInWorld);
     }
 
-    @Override
     public int hashCode() {
-        return Objects.hash(chunkPos, posInWorld, scene, gameObject);
+        return Objects.hash(chunkPos, posInWorld);
     }
 
 }

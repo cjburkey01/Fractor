@@ -1,9 +1,9 @@
 package com.cjburkey.radgame.gl;
 
 import com.cjburkey.radgame.ResourceLocation;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
 import org.joml.Rectanglef;
 import org.lwjgl.system.MemoryStack;
 
@@ -17,10 +17,10 @@ import static org.lwjgl.system.MemoryStack.*;
 public class TextureAtlas {
 
     private final Texture texture;
-    private final HashMap<ResourceLocation, Rectanglef> mapping;
+    private final Object2ObjectOpenHashMap<ResourceLocation, Rectanglef> mapping;
 
     // Width = number of subimages
-    private TextureAtlas(final Texture texture, final HashMap<ResourceLocation, Rectanglef> mapping) {
+    private TextureAtlas(final Texture texture, final Object2ObjectOpenHashMap<ResourceLocation, Rectanglef> mapping) {
         if (texture.width != texture.height)
             throw new IllegalArgumentException(String.format("Invalid texture size: %sx%s", texture.width, texture.height));
 
@@ -50,7 +50,7 @@ public class TextureAtlas {
         final var textureWidth = getTextureSize(textures.length);
         final var mipmapCount = Texture.getMipmapCount(textureWidth * tileSize);
         final var atlasTexture = new Texture(GL_TEXTURE_2D, glGenTextures(), tileSize, tileSize, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_RGBA);
-        final var atlas = new HashMap<ResourceLocation, Rectanglef>();
+        final var atlas = new Object2ObjectOpenHashMap<ResourceLocation, Rectanglef>();
 
         atlasTexture.bind();
 

@@ -1,15 +1,15 @@
 package com.cjburkey.radgame.ecs;
 
 import com.cjburkey.radgame.component.Transform;
-import com.cjburkey.radgame.util.ConcurrentManager;
-import com.cjburkey.radgame.util.IConcurrentObject;
+import com.cjburkey.radgame.util.collection.ConcurrentManager;
+import com.cjburkey.radgame.util.collection.IConcurrentObject;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "unused"})
 public final class GameObject implements IConcurrentObject {
 
     private final UUID uuid = UUID.randomUUID();

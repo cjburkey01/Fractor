@@ -5,7 +5,7 @@ import com.cjburkey.radgame.gl.TextureAtlas;
 import com.cjburkey.radgame.gl.shader.Shader;
 import com.cjburkey.radgame.voxel.chunk.IVoxelChunkGenerator;
 import com.cjburkey.radgame.voxel.chunk.VoxelChunk;
-import java.util.HashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Objects;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
@@ -15,14 +15,14 @@ import static java.lang.Math.*;
 /**
  * Created by CJ Burkey on 2019/03/08
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "unused"})
 public final class VoxelWorld {
 
     private final Scene scene;
     private final IVoxelChunkGenerator voxelChunkGenerator;
     private final Shader voxelShader;
     private final TextureAtlas voxelTextureAtlas;
-    private final HashMap<Vector2ic, VoxelChunk> chunks = new HashMap<>();
+    private final Object2ObjectOpenHashMap<Vector2ic, VoxelChunk> chunks = new Object2ObjectOpenHashMap<>();
 
     public VoxelWorld(final Scene scene,
                       final IVoxelChunkGenerator voxelChunkGenerator,
@@ -41,6 +41,10 @@ public final class VoxelWorld {
         chunks.put(chunkPos, chunk);
         voxelChunkGenerator.generate(chunk);
         return chunk;
+    }
+
+    public VoxelChunk getOrGenChunk(final int x, int y) {
+        return getOrGenChunk(new Vector2i(x, y));
     }
 
     public VoxelChunk getChunk(final Vector2i chunkPos) {

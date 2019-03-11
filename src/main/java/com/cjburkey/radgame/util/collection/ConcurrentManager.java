@@ -1,6 +1,6 @@
-package com.cjburkey.radgame.util;
+package com.cjburkey.radgame.util.collection;
 
-import java.util.ArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -12,7 +12,7 @@ public final class ConcurrentManager<K, T extends IConcurrentObject> {
 
     private final ConcurrentLinkedQueue<QueuedObject> toAdd = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<QueuedObject> toRemove = new ConcurrentLinkedQueue<>();
-    private final ConcurrentHashMap<K, ArrayList<T>> objects = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<K, ObjectArrayList<T>> objects = new ConcurrentHashMap<>();
 
     public void queueAdd(final K key, final T object) {
         toAdd.offer(new QueuedObject(key, object));
@@ -41,7 +41,7 @@ public final class ConcurrentManager<K, T extends IConcurrentObject> {
         while (!toAdd.isEmpty()) {
             final var queuedObject = toAdd.poll();
             if (queuedObject != null) {
-                List<T> list = getList(queuedObject.key);
+                ObjectArrayList<T> list = getList(queuedObject.key);
                 if (list.size() < queuedObject.object.maxPerObject()) {
                     list.add(queuedObject.object);
                     queuedObject.object.onLoad();
@@ -69,10 +69,10 @@ public final class ConcurrentManager<K, T extends IConcurrentObject> {
         return Collections.unmodifiableList(getList(key));
     }
 
-    private ArrayList<T> getList(final K key) {
+    private ObjectArrayList<T> getList(final K key) {
         var list = objects.getOrDefault(key, null);
         if (list == null) {
-            list = new ArrayList<>();
+            list = new ObjectArrayList<>();
             objects.put(key, list);
         }
         return list;

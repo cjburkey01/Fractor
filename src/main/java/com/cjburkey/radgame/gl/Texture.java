@@ -1,11 +1,11 @@
 package com.cjburkey.radgame.gl;
 
 import com.cjburkey.radgame.ResourceLocation;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.HashMap;
 import java.util.Objects;
 import org.lwjgl.system.MemoryStack;
 
@@ -22,7 +22,11 @@ import static org.lwjgl.system.MemoryUtil.*;
 @SuppressWarnings("WeakerAccess")
 public class Texture implements AutoCloseable {
 
-    private static HashMap<Integer, Integer> currentTextures = new HashMap<>();
+    private static Int2IntOpenHashMap currentTextures = new Int2IntOpenHashMap();
+
+    static {
+        currentTextures.defaultReturnValue(-1);
+    }
 
     final int bindLocation;
     final int texture;
@@ -70,7 +74,7 @@ public class Texture implements AutoCloseable {
     }
 
     private boolean isBound() {
-        return currentTextures.getOrDefault(bindLocation, -1).equals(texture);
+        return (currentTextures.get(bindLocation) == texture);
     }
 
     private void genMipmaps() {
