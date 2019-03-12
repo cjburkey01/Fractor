@@ -18,14 +18,16 @@ public class TextureAtlas {
 
     private final Texture texture;
     private final Object2ObjectOpenHashMap<ResourceLocation, Rectanglef> mapping;
+    public final int width;
 
     // Width = number of subimages
-    private TextureAtlas(final Texture texture, final Object2ObjectOpenHashMap<ResourceLocation, Rectanglef> mapping) {
+    private TextureAtlas(final Texture texture, final int width, final Object2ObjectOpenHashMap<ResourceLocation, Rectanglef> mapping) {
         if (texture.width != texture.height)
             throw new IllegalArgumentException(String.format("Invalid texture size: %sx%s", texture.width, texture.height));
 
         this.texture = texture;
         this.mapping = mapping;
+        this.width = width;
     }
 
     public Texture getTexture() {
@@ -99,7 +101,7 @@ public class TextureAtlas {
             }
         }
 
-        return new TextureAtlas(atlasTexture, atlas);
+        return new TextureAtlas(atlasTexture, textureWidth, atlas);
     }
 
 }

@@ -5,6 +5,7 @@ import com.cjburkey.radgame.ecs.Scene;
 import com.cjburkey.radgame.game.GameManager;
 import com.cjburkey.radgame.glfw.Window;
 import com.cjburkey.radgame.util.io.Log;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.io.Closeable;
 
 import static org.lwjgl.opengl.GL30.*;
@@ -13,6 +14,7 @@ import static org.lwjgl.opengl.GL30.*;
 public class RadGame implements Runnable, Closeable {
 
     public static RadGame INSTANCE = new RadGame();
+    public static ObjectOpenHashSet<Runnable> CLEANUP = new ObjectOpenHashSet<>();
 
     private boolean running = false;
     private Window window;
@@ -36,7 +38,7 @@ public class RadGame implements Runnable, Closeable {
 
     public static void main(String[] args) {
         INSTANCE.run();
-        INSTANCE.close();
+        INSTANCE.onExit();
     }
 
     private RadGame() {
@@ -75,7 +77,7 @@ public class RadGame implements Runnable, Closeable {
         Log.debug("Initializing");
 
         initWindow();
-        window.setClearColor(0.1f, 0.1f, 0.1f);
+        window.setClearColor(0.48f, 0.74f, 1.0f);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
@@ -91,8 +93,14 @@ public class RadGame implements Runnable, Closeable {
 
     @Override
     public void close() {
-        exit();
+        running = false;
+    }
 
+    private void onExit() {
+        scene.clear();
+
+        CLEANUP.forEach(Runnable::run);
+        CLEANUP.clear();
         window.destroy();
         Window.terminate();
     }
@@ -104,7 +112,7 @@ public class RadGame implements Runnable, Closeable {
     private void processInput() {
         window.pollEvents();
         if (window.getShouldClose()) {
-            running = false;
+            close();
         }
     }
 
@@ -120,10 +128,6 @@ public class RadGame implements Runnable, Closeable {
         scene.foreachComp(Component::onRender);
 
         window.swapBuffers();
-    }
-
-    private void exit() {
-        scene.clear();
     }
 
     public Window window() {

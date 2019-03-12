@@ -1,5 +1,6 @@
 package com.cjburkey.radgame.gl;
 
+import com.cjburkey.radgame.RadGame;
 import com.cjburkey.radgame.ResourceLocation;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import java.io.IOException;
@@ -51,16 +52,21 @@ public class Texture implements AutoCloseable {
         this.minFilter = minFilter;
         this.magFilter = magFilter;
         this.type = type;
+
+        RadGame.CLEANUP.add(this::close);
     }
 
     public void bind() {
         if (!isBound()) {
             glBindTexture(bindLocation, texture);
+            currentTextures.put(bindLocation, texture);
+
             glPixelStorei(GL_PACK_ALIGNMENT, 1);
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             glTexParameteri(bindLocation, GL_TEXTURE_MIN_FILTER, minFilter);
             glTexParameteri(bindLocation, GL_TEXTURE_MAG_FILTER, magFilter);
-            currentTextures.put(bindLocation, texture);
+            glTexParameteri(bindLocation, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(bindLocation, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         }
     }
 

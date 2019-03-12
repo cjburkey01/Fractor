@@ -12,7 +12,7 @@ import com.cjburkey.radgame.util.math.Interpolate;
 public class CameraZoom extends Component {
 
     public float speed = 1.0f;
-    public float min = 0.5f;
+    public float min = 2.35f;
     public float max = 170.0f;
 
     private Camera camera;

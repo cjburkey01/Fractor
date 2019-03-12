@@ -1,5 +1,6 @@
 package com.cjburkey.radgame.gl;
 
+import com.cjburkey.radgame.RadGame;
 import com.cjburkey.radgame.util.collection.CollectionHelper;
 import com.cjburkey.radgame.util.io.Log;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -21,8 +22,8 @@ import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
-@SuppressWarnings("WeakerAccess")
-public class Mesh {
+@SuppressWarnings({"WeakerAccess", "UnusedReturnValue", "unused"})
+public class Mesh implements AutoCloseable {
 
     private static final int FLOATS_PER_VERTEX = 3;
 
@@ -37,6 +38,8 @@ public class Mesh {
         vao = glGenVertexArrays();
         ebo = glGenBuffers();
         buffers.put("ebo", ebo);
+
+        RadGame.CLEANUP.add(this::close);
     }
 
     public Mesh setVertices(ByteBuffer data) {
@@ -124,7 +127,8 @@ public class Mesh {
         triangles = 0;
     }
 
-    public void destroy() {
+    @Override
+    public void close() {
         if (currentMesh == vao) {
             currentMesh = -1;
             glBindVertexArray(0);

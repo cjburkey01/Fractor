@@ -25,7 +25,7 @@ public class MeshRenderer extends Component {
 
     @Override
     public void onRemove() {
-        mesh.destroy();
+        mesh.close();
     }
 
 }

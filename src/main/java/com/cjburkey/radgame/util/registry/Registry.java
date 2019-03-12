@@ -10,26 +10,36 @@ import java.util.function.Consumer;
 /**
  * Created by CJ Burkey on 2019/03/10
  */
-public class Registry<T extends IRegistryItem> {
+@SuppressWarnings("WeakerAccess")
+public final class Registry<T extends IRegistryItem> {
 
     private final Object2ObjectOpenHashMap<ResourceLocation, T> items = new Object2ObjectOpenHashMap<>();
     private boolean finished;
 
-    public void registerItem(T item) {
+    public void registerItem(final T item) {
         if (finished || item == null || item.getRegistryId() == null) return;
         items.put(item.getRegistryId(), item);
     }
 
+    @SafeVarargs
+    public final void registerItems(final T... items) {
+        for (T item : items) registerItem(item);
+    }
+
+    public void registerItems(Collection<T> items) {
+        items.forEach(this::registerItem);
+    }
+
     @SuppressWarnings("WeakerAccess")
-    public boolean hasItem(ResourceLocation registryId) {
+    public boolean hasItem(final ResourceLocation registryId) {
         return items.containsKey(registryId);
     }
 
-    public boolean hasItem(T item) {
+    public boolean hasItem(final T item) {
         return hasItem(item.getRegistryId());
     }
 
-    public T getItem(ResourceLocation registryId) {
+    public T getItem(final ResourceLocation registryId) {
         return items.getOrDefault(registryId, null);
     }
 

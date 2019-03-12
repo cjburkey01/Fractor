@@ -1,5 +1,6 @@
 package com.cjburkey.radgame.gl.shader;
 
+import com.cjburkey.radgame.RadGame;
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.util.io.Log;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -27,6 +28,8 @@ public class Shader implements AutoCloseable {
         this.shaderProgram = shaderProgram;
         this.uniformLocations = new Object2IntOpenHashMap<>(uniformLocations);
         this.uniformLocations.defaultReturnValue(-1);
+
+        RadGame.CLEANUP.add(this::close);
     }
 
     public void setUniform(String name, int value) {

@@ -2,23 +2,18 @@ package com.cjburkey.radgame.voxel;
 
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.gl.Mesh;
-import com.cjburkey.radgame.voxel.world.Voxel;
 import com.cjburkey.radgame.voxel.world.VoxelState;
-import java.util.Objects;
 
 /**
  * Created by CJ Burkey on 2019/03/06
  */
-public class TexturedSquareVoxel extends Voxel {
+@SuppressWarnings({"unused", "WeakerAccess"})
+public class TexturedSquareVoxel extends SingleTexturedVoxel {
 
-    private final ResourceLocation textureId;
-
-    private TexturedSquareVoxel(final ResourceLocation id, final ResourceLocation textureId) {
-        super(id);
-        this.textureId = Objects.requireNonNull(textureId);
+    public TexturedSquareVoxel(final ResourceLocation id, final ResourceLocation textureId) {
+        super(id, textureId);
     }
 
-    @SuppressWarnings("WeakerAccess")
     public TexturedSquareVoxel(final String id, final String textureId) {
         this(ResourceLocation.fromString(id, false), ResourceLocation.fromString(textureId, true));
     }
@@ -27,7 +22,7 @@ public class TexturedSquareVoxel extends Voxel {
     public void generateMesh(final Mesh.MeshBuilder mesh, final VoxelState voxelState) {
         final var cx = voxelState.getPosInChunk().x();
         final var cy = voxelState.getPosInChunk().y();
-        final var uv = voxelState.getWorld().getVoxelTextureAtlas().getUv(textureId);
+        final var uv = voxelState.getWorld().getVoxelTextureAtlas().getUv(getPrimaryTextureId());
 
         mesh
                 // 0
@@ -40,10 +35,6 @@ public class TexturedSquareVoxel extends Voxel {
                 .verts(0, 2)
                 // 3
                 .vert(cx + 1.0f, cy + 1.0f).uv(uv.maxX, uv.minY);
-    }
-
-    public ResourceLocation getTextureId() {
-        return textureId;
     }
 
 }

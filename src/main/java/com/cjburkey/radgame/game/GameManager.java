@@ -8,13 +8,15 @@ import com.cjburkey.radgame.component.CameraZoom;
 import com.cjburkey.radgame.component.KeyboardMove;
 import com.cjburkey.radgame.ecs.Component;
 import com.cjburkey.radgame.ecs.Scene;
-import com.cjburkey.radgame.gl.TextureAtlas;
 import com.cjburkey.radgame.gl.shader.Shader;
+import com.cjburkey.radgame.glfw.Input;
 import com.cjburkey.radgame.util.event.EventHandler;
 import com.cjburkey.radgame.voxel.chunk.DefaultVoxelChunkGenerator;
 import com.cjburkey.radgame.voxel.chunk.IVoxelChunkGenerator;
 import com.cjburkey.radgame.voxel.chunk.VoxelChunkMesher;
 import java.io.IOException;
+
+import static org.lwjgl.glfw.GLFW.*;
 
 /**
  * Created by CJ Burkey on 2019/03/03
@@ -29,6 +31,8 @@ public class GameManager extends Component {
     private Shader texShader;
     private WorldHandler worldHandler;
 
+    private double lastTitleUpdateTime = Time.getTime();
+
     @Override
     public void onLoad() {
         try {
@@ -41,18 +45,16 @@ public class GameManager extends Component {
         scene.createObjectWith(new Camera(), new CameraZoom(), new KeyboardMove());
         Camera.main.halfHeight = 6.5f;
 
-        initWorld(new DefaultVoxelChunkGenerator(15.0f, 75.0f, 0));
+        initWorld(new DefaultVoxelChunkGenerator(15.0f, 75.0f, 0, 3));
     }
 
     private void initWorld(IVoxelChunkGenerator generator) {
-        final TextureAtlas atlas = TextureAtlas.create(32, new ResourceLocation("radgame", "texture/voxel/stone", "png"));
-        if (atlas == null) RadGame.INSTANCE.close();
-
         worldHandler = new WorldHandler();
-        worldHandler.init(scene, generator, texShader, atlas);
+        worldHandler.init(scene, generator, texShader);
 
-        for (var y = -5; y < 5; y++) {
-            for (var x = -5; x < 5; x++) {
+        final var chunkGenTest = 9;
+        for (var y = -chunkGenTest; y < chunkGenTest; y++) {
+            for (var x = -chunkGenTest; x < chunkGenTest; x++) {
                 final var chunkA = worldHandler.getVoxelWorld().getOrGenChunk(x, y);
                 VoxelChunkMesher.generateMesh(chunkA);
             }
@@ -65,8 +67,19 @@ public class GameManager extends Component {
     }
 
     @Override
+    public void onUpdate() {
+        if (Input.key().wasPressed(GLFW_KEY_ESCAPE)) RadGame.INSTANCE.close();
+    }
+
+    @Override
     public void onRender() {
-        RadGame.INSTANCE.window().setTitle(String.format("%.2f", 1.0f / Time.renderDeltaf()));
+        final var now = Time.getTime();
+        if ((now - lastTitleUpdateTime) >= (1.0f / 10.0f)) {
+            lastTitleUpdateTime = now;
+            RadGame.INSTANCE.window().setTitle(String.format("Fractor 0.0.1 | %.2f FPS | %.2f UPS",
+                    1.0f / Time.renderDeltaf(),
+                    1.0f / Time.updateDeltaf()));
+        }
     }
 
     public WorldHandler getWorld() {
