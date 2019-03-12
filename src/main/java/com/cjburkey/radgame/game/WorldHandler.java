@@ -7,7 +7,7 @@ import com.cjburkey.radgame.gl.shader.Shader;
 import com.cjburkey.radgame.util.io.Log;
 import com.cjburkey.radgame.util.registry.Registry;
 import com.cjburkey.radgame.voxel.ITexturedVoxel;
-import com.cjburkey.radgame.voxel.VoxelTypes;
+import com.cjburkey.radgame.voxel.Voxels;
 import com.cjburkey.radgame.voxel.chunk.IVoxelChunkGenerator;
 import com.cjburkey.radgame.voxel.world.Voxel;
 import com.cjburkey.radgame.voxel.world.VoxelWorld;
@@ -24,7 +24,7 @@ public class WorldHandler {
     private Registry<Voxel> voxels = new Registry<>();
 
     public void init(Scene scene, IVoxelChunkGenerator voxelChunkGenerator, Shader chunkShader) {
-        VoxelTypes.init();
+        Voxels.init();
         registerVoxels();
         voxelWorld = new VoxelWorld(scene, voxelChunkGenerator, chunkShader, generateVoxelTextureAtlas());
     }

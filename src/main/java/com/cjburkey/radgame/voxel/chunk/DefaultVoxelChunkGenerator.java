@@ -1,7 +1,7 @@
 package com.cjburkey.radgame.voxel.chunk;
 
 import com.cjburkey.radgame.util.noise.NoiseState;
-import com.cjburkey.radgame.voxel.VoxelTypes;
+import com.cjburkey.radgame.voxel.Voxels;
 
 /**
  * Created by CJ Burkey on 2019/03/08
@@ -35,19 +35,19 @@ public final class DefaultVoxelChunkGenerator implements IVoxelChunkGenerator {
             if (localY >= 0) {
                 if (localY >= VoxelChunk.CHUNK_SIZE) localY = (VoxelChunk.CHUNK_SIZE - 1);
                 for (var y = localY; y >= 0; y--) {
-                    chunk.setVoxel(x, y, 1, VoxelTypes.STONE, false);
+                    chunk.setVoxel(x, y, 1, Voxels.STONE, false);
                 }
             }
-            final var lastStone = localY + 1;
+            final var lastStone = localY;
             localY += dirtThickness;
             if (localY >= 0) {
                 if (localY >= VoxelChunk.CHUNK_SIZE) localY = (VoxelChunk.CHUNK_SIZE - 1);
-                for (var y = localY; y >= lastStone; y--) {
-                    chunk.setVoxel(x, y, 1, VoxelTypes.DIRT, false);
+                for (var y = localY; y > lastStone; y--) {
+                    chunk.setVoxel(x, y, 1, Voxels.DIRT, false);
                 }
             }
             localY += 1;
-            if (localY >= 0) chunk.setVoxel(x, localY, 1, VoxelTypes.GRASS, false);
+            if (localY >= 0) chunk.setVoxel(x, localY, 1, Voxels.GRASS, false);
         }
     }
 

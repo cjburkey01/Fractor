@@ -4,21 +4,23 @@ import com.cjburkey.radgame.ResourceLocation;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
  * Created by CJ Burkey on 2019/03/10
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "unused"})
 public final class Registry<T extends IRegistryItem> {
 
     private final Object2ObjectOpenHashMap<ResourceLocation, T> items = new Object2ObjectOpenHashMap<>();
     private boolean finished;
 
     public void registerItem(final T item) {
-        if (finished || item == null || item.getRegistryId() == null) return;
-        items.put(item.getRegistryId(), item);
+        Objects.requireNonNull(item);
+        Objects.requireNonNull(item.getRegistryId());
+        if (!finished) items.put(item.getRegistryId(), item);
     }
 
     @SafeVarargs

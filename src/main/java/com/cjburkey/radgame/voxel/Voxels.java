@@ -8,7 +8,7 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 /**
  * Created by CJ Burkey on 2019/03/08
  */
-public final class VoxelTypes {
+public final class Voxels {
 
     private static final ObjectOpenHashSet<Voxel> voxels = new ObjectOpenHashSet<>();
 
