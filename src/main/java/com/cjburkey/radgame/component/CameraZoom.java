@@ -11,7 +11,7 @@ import com.cjburkey.radgame.util.math.Interpolate;
 @SuppressWarnings("WeakerAccess")
 public class CameraZoom extends Component {
 
-    public float speed = 1.0f;
+    public float speed = 0.15f;
     public float min = 2.35f;
     public float max = 170.0f;
 
@@ -27,7 +27,7 @@ public class CameraZoom extends Component {
     public void onUpdate() {
         if (camera == null) return;
 
-        camera.halfHeight = Interpolate.clamp((camera.halfHeight + (speed * -Input.scrollf().y)), min, max);
+        camera.halfHeight = Interpolate.clamp((camera.halfHeight + (camera.halfHeight * speed * -Input.scrollf().y)), min, max);
     }
 
 }

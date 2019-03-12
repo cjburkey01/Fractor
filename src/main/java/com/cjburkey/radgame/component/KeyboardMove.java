@@ -15,7 +15,7 @@ import static org.lwjgl.glfw.GLFW.*;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class KeyboardMove extends Component {
 
-    public float speed = 12.0f;
+    public float speed = 5.0f;
 
     public final IntOpenHashSet upKeys = new IntOpenHashSet();
     public final IntOpenHashSet downKeys = new IntOpenHashSet();
@@ -23,6 +23,8 @@ public class KeyboardMove extends Component {
     public final IntOpenHashSet leftKeys = new IntOpenHashSet();
 
     private final Vector2f velocity = new Vector2f();
+
+    private Camera referenceCamera;
 
     public KeyboardMove(boolean addDefaultKeys) {
         if (addDefaultKeys) {
@@ -38,6 +40,11 @@ public class KeyboardMove extends Component {
     }
 
     @Override
+    public void onLoad() {
+        referenceCamera = parent().getComponent(Camera.class);
+    }
+
+    @Override
     public void onUpdate() {
         velocity.zero();
 
@@ -46,9 +53,14 @@ public class KeyboardMove extends Component {
         if (Input.key().isOneDown(rightKeys)) velocity.x += 1.0f;
         if (Input.key().isOneDown(leftKeys)) velocity.x -= 1.0f;
 
-        if (!velocity.equals(0.0f, 0.0f)) velocity.normalize().mul(speed * Time.updateDeltaf());
+        if (!velocity.equals(0.0f, 0.0f)) velocity.normalize().mul(speed() * Time.updateDeltaf());
 
         parent().transform.position.add(velocity.x, velocity.y, 0.0f);
+    }
+
+    private float speed() {
+        if (referenceCamera == null) return speed;
+        return speed * referenceCamera.halfHeight;
     }
 
 }
