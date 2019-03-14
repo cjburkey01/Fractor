@@ -26,7 +26,7 @@ public final class VoxelChunk {
 
     private final Vector2ic chunkPos;
     private final Vector2ic posInWorld;
-    private final VoxelWorld world;
+    public final VoxelWorld world;
     private final Scene scene;
     final MeshRenderer meshRenderer;
     final GameObject gameObject;

@@ -23,10 +23,16 @@ public class WorldHandler {
     private VoxelWorld voxelWorld;
     private Registry<Voxel> voxels = new Registry<>();
 
+    private final long seed;
+
+    public WorldHandler(long seed) {
+        this.seed = seed;
+    }
+
     public void init(Scene scene, IVoxelChunkGenerator voxelChunkGenerator, Shader chunkShader) {
         Voxels.init();
         registerVoxels();
-        voxelWorld = new VoxelWorld(scene, voxelChunkGenerator, chunkShader, generateVoxelTextureAtlas());
+        voxelWorld = new VoxelWorld(seed, scene, voxelChunkGenerator, chunkShader, generateVoxelTextureAtlas());
     }
 
     private void registerVoxels() {

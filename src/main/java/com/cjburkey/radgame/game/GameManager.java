@@ -49,7 +49,7 @@ public class GameManager extends Component {
     }
 
     private void initWorld(IVoxelChunkGenerator generator) {
-        worldHandler = new WorldHandler();
+        worldHandler = new WorldHandler(0L);
         worldHandler.init(scene, generator, texShader);
 
         final var chunkGenTest = 9;

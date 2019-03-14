@@ -23,11 +23,14 @@ public final class VoxelWorld {
     private final Shader voxelShader;
     private final TextureAtlas voxelTextureAtlas;
     private final Object2ObjectOpenHashMap<Vector2ic, VoxelChunk> chunks = new Object2ObjectOpenHashMap<>();
+    public final long seed;
 
-    public VoxelWorld(final Scene scene,
+    public VoxelWorld(final long seed,
+                      final Scene scene,
                       final IVoxelChunkGenerator voxelChunkGenerator,
                       final Shader voxelShader,
                       final TextureAtlas voxelTextureAtlas) {
+        this.seed = seed;
         this.scene = Objects.requireNonNull(scene);
         this.voxelChunkGenerator = Objects.requireNonNull(voxelChunkGenerator);
         this.voxelShader = Objects.requireNonNull(voxelShader);
