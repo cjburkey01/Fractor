@@ -18,9 +18,7 @@ public final class Registry<T extends IRegistryItem> {
     private boolean finished;
 
     public void registerItem(final T item) {
-        Objects.requireNonNull(item);
-        Objects.requireNonNull(item.getRegistryId());
-        if (!finished) items.put(item.getRegistryId(), item);
+        if (!finished) items.put(Objects.requireNonNull(item.getRegistryId()), Objects.requireNonNull(item));
     }
 
     @SafeVarargs
@@ -32,7 +30,6 @@ public final class Registry<T extends IRegistryItem> {
         items.forEach(this::registerItem);
     }
 
-    @SuppressWarnings("WeakerAccess")
     public boolean hasItem(final ResourceLocation registryId) {
         return items.containsKey(registryId);
     }

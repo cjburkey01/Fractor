@@ -78,11 +78,6 @@ public class Window {
         glfwDestroyWindow(window);
     }
 
-    public static void terminate() {
-        glfwTerminate();
-        Objects.requireNonNull(glfwSetErrorCallback(null)).free();
-    }
-
     public void pollEvents() {
         Input.update();
         glfwPollEvents();
@@ -182,6 +177,24 @@ public class Window {
 
     public Vector3f getClearColor() {
         return new Vector3f(clearColor);
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Window window1 = (Window) o;
+        return window == window1.window;
+    }
+
+    public int hashCode() {
+        return Objects.hash(window);
+    }
+
+    public static void terminate() {
+        glfwTerminate();
+
+        final var a = glfwSetErrorCallback(null);
+        if (a != null) a.free();
     }
 
 }

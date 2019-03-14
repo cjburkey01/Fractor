@@ -68,12 +68,12 @@ public class Input {
         return new Vector2i((int) mousePos.x, (int) mousePos.y);
     }
 
-    public static Vector2i deltaMousei() {
-        return new Vector2i((int) deltaMousePos.x, (int) deltaMousePos.y);
-    }
-
     public static Vector2f mousePosf() {
         return new Vector2f((float) mousePos.x, (float) mousePos.y);
+    }
+
+    public static Vector2i deltaMousei() {
+        return new Vector2i((int) deltaMousePos.x, (int) deltaMousePos.y);
     }
 
     public static Vector2f deltaMousef() {

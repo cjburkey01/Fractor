@@ -14,9 +14,9 @@ public final class DefaultVoxelChunkGenerator implements IVoxelChunkGenerator {
     private final int worldBaseHeight;
     private final int dirtThickness;
 
-    private Voxel voxelSubterrain = Voxels.STONE;
-    private Voxel voxelSubTopTerrain = Voxels.DIRT;
-    private Voxel voxelTopTerrain = Voxels.GRASS;
+    private final Voxel voxelSubterrain = Voxels.STONE;
+    private final Voxel voxelSubTopTerrain = Voxels.DIRT;
+    private final Voxel voxelTopTerrain = Voxels.GRASS;
 
     public DefaultVoxelChunkGenerator(double noiseAmplitude,
                                       double noiseScale,

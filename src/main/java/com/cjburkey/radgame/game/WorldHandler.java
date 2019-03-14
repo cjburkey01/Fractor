@@ -36,7 +36,7 @@ public class WorldHandler {
     }
 
     private void registerVoxels() {
-        GameManager.EVENT_BUS.invoke(VoxelTypeRegisterEvent.class, new VoxelTypeRegisterEvent(voxels));
+        GameManager.EVENT_BUS.invoke(new VoxelTypeRegisterEvent(voxels));
         voxels.finish();
     }
 

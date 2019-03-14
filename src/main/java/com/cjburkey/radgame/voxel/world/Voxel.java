@@ -16,7 +16,7 @@ public abstract class Voxel implements IRegistryItem {
         this.registryId = Objects.requireNonNull(id);
     }
 
-    // A submesh state is created in the mesh builder, so it's necessary to use index 0 as the start of this mesh's vertices
+    // A submesh state is created in the mesh builder, so index 0 is the start of this mesh's vertices
     public abstract void generateMesh(final Mesh.MeshBuilder mesh, final VoxelState voxelState);
 
     public void onAdd(final VoxelState voxelState) {

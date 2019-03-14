@@ -19,7 +19,7 @@ public class MeshRenderer extends Component {
 
         final var shaderRenderer = parent().getComponent(MaterialRenderer.class);
         if (shaderRenderer != null && shaderRenderer.material != null && shaderRenderer.material.shader != null) {
-            MeshRenderHandler.render(mesh, shaderRenderer.material, RadGame.INSTANCE.window(), Camera.main, parent().transform);
+            MeshRenderHandler.render(mesh, shaderRenderer.material, RadGame.INSTANCE.window(), Camera.main, transform());
         }
     }
 

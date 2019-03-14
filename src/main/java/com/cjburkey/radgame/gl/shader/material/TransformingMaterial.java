@@ -30,7 +30,7 @@ public abstract class TransformingMaterial extends Material {
 
     @Override
     public void updateView(Camera camera) {
-        final var camTransform = camera.parent().transform;
+        final var camTransform = camera.transform();
         shader.setUniform("viewMatrix", getViewMatrix(camTransform.position, camTransform.rotation));
     }
 

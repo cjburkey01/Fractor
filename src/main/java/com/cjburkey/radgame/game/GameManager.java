@@ -64,6 +64,8 @@ public class GameManager extends Component {
     @Override
     public void onRemove() {
         texShader.close();
+
+        EVENT_BUS.invoke(new RadGame.EventCleanup());
     }
 
     @Override

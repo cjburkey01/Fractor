@@ -12,9 +12,9 @@ public final class Voxels {
 
     private static final ObjectOpenHashSet<Voxel> voxels = new ObjectOpenHashSet<>();
 
-    public static final Voxel STONE = add(new TexturedSquareVoxel("radgame:voxel/stone", "radgame:texture/voxel/stone.png"));
-    public static final Voxel DIRT = add(new TexturedSquareVoxel("radgame:voxel/dirt", "radgame:texture/voxel/dirt.png"));
-    public static final Voxel GRASS = add(new TexturedSquareVoxel("radgame:voxel/grass", "radgame:texture/voxel/grass.png"));
+    public static final Voxel STONE = register(new TexturedSquareVoxel("radgame:voxel/stone", "radgame:texture/voxel/stone.png"));
+    public static final Voxel DIRT = register(new TexturedSquareVoxel("radgame:voxel/dirt", "radgame:texture/voxel/dirt.png"));
+    public static final Voxel GRASS = register(new TexturedSquareVoxel("radgame:voxel/grass", "radgame:texture/voxel/grass.png"));
 
     private static boolean init = false;
 
@@ -24,7 +24,7 @@ public final class Voxels {
         GameManager.EVENT_BUS.addListener(VoxelTypeRegisterEvent.class, e -> e.registry.registerItems(voxels));
     }
 
-    private static Voxel add(Voxel a) {
+    private static Voxel register(Voxel a) {
         voxels.add(a);
         return a;
     }

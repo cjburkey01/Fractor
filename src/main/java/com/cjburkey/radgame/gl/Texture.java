@@ -2,6 +2,7 @@ package com.cjburkey.radgame.gl;
 
 import com.cjburkey.radgame.RadGame;
 import com.cjburkey.radgame.ResourceLocation;
+import com.cjburkey.radgame.game.GameManager;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,7 +54,7 @@ public class Texture implements AutoCloseable {
         this.magFilter = magFilter;
         this.type = type;
 
-        RadGame.CLEANUP.add(this::close);
+        GameManager.EVENT_BUS.addListener(RadGame.EventCleanup.class, ignored -> this.close());
     }
 
     public void bind() {

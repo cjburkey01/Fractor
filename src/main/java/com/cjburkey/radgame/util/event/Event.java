@@ -3,7 +3,7 @@ package com.cjburkey.radgame.util.event;
 /**
  * Created by CJ Burkey on 2019/03/11
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "unused"})
 public abstract class Event {
 
     private boolean cancelled = false;

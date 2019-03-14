@@ -7,13 +7,13 @@ import com.cjburkey.radgame.voxel.world.VoxelState;
 /**
  * Created by CJ Burkey on 2019/03/06
  */
-@SuppressWarnings({"unused", "WeakerAccess"})
 public class TexturedSquareVoxel extends SingleTexturedVoxel {
 
-    public TexturedSquareVoxel(final ResourceLocation id, final ResourceLocation textureId) {
+    private TexturedSquareVoxel(final ResourceLocation id, final ResourceLocation textureId) {
         super(id, textureId);
     }
 
+    @SuppressWarnings("WeakerAccess")
     public TexturedSquareVoxel(final String id, final String textureId) {
         this(ResourceLocation.fromString(id, false), ResourceLocation.fromString(textureId, true));
     }

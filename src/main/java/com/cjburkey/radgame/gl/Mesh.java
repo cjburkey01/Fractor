@@ -1,6 +1,7 @@
 package com.cjburkey.radgame.gl;
 
 import com.cjburkey.radgame.RadGame;
+import com.cjburkey.radgame.game.GameManager;
 import com.cjburkey.radgame.util.collection.CollectionHelper;
 import com.cjburkey.radgame.util.io.Log;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -39,7 +40,7 @@ public class Mesh implements AutoCloseable {
         ebo = glGenBuffers();
         buffers.put("ebo", ebo);
 
-        RadGame.CLEANUP.add(this::close);
+        GameManager.EVENT_BUS.addListener(RadGame.EventCleanup.class, ignored -> this.close());
     }
 
     public Mesh setVertices(ByteBuffer data) {
@@ -117,14 +118,18 @@ public class Mesh implements AutoCloseable {
         attribs.forEach((IntConsumer) GL20::glDisableVertexAttribArray);
     }
 
-    public void clear() {
+    private void clear(boolean keepEbo) {
         for (int buffer : buffers.values()) {
-            if (buffer != ebo) glDeleteBuffers(buffer);
+            if (!keepEbo || buffer != ebo) glDeleteBuffers(buffer);
         }
         buffers.clear();
-        buffers.put("ebo", ebo);
+        if (keepEbo) buffers.put("ebo", ebo);
         attribs.clear();
         triangles = 0;
+    }
+
+    public void clear() {
+        clear(true);
     }
 
     @Override
@@ -132,11 +137,10 @@ public class Mesh implements AutoCloseable {
         if (currentMesh == vao) {
             currentMesh = -1;
             glBindVertexArray(0);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
 
-        clear();
-        buffers.clear();
-        glDeleteBuffers(ebo);
+        clear(false);
         glDeleteVertexArrays(vao);
     }
 

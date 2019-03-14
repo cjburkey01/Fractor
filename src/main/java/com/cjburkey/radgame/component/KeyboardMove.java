@@ -55,7 +55,7 @@ public class KeyboardMove extends Component {
 
         if (!velocity.equals(0.0f, 0.0f)) velocity.normalize().mul(speed() * Time.updateDeltaf());
 
-        parent().transform.position.add(velocity.x, velocity.y, 0.0f);
+        transform().position.add(velocity.x, velocity.y, 0.0f);
     }
 
     private float speed() {

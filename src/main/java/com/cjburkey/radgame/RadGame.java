@@ -4,8 +4,8 @@ import com.cjburkey.radgame.ecs.Component;
 import com.cjburkey.radgame.ecs.Scene;
 import com.cjburkey.radgame.game.GameManager;
 import com.cjburkey.radgame.glfw.Window;
+import com.cjburkey.radgame.util.event.Event;
 import com.cjburkey.radgame.util.io.Log;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.io.Closeable;
 
 import static org.lwjgl.opengl.GL30.*;
@@ -14,7 +14,6 @@ import static org.lwjgl.opengl.GL30.*;
 public class RadGame implements Runnable, Closeable {
 
     public static RadGame INSTANCE = new RadGame();
-    public static ObjectOpenHashSet<Runnable> CLEANUP = new ObjectOpenHashSet<>();
 
     private boolean running = false;
     private Window window;
@@ -99,8 +98,6 @@ public class RadGame implements Runnable, Closeable {
     private void onExit() {
         scene.clear();
 
-        CLEANUP.forEach(Runnable::run);
-        CLEANUP.clear();
         window.destroy();
         Window.terminate();
     }
@@ -132,6 +129,13 @@ public class RadGame implements Runnable, Closeable {
 
     public Window window() {
         return window;
+    }
+
+    // This must be invoked by the game, the raw game engine won't do it.
+    // I'm trying to delegate but I don't want cleanup to be completely separate
+    //  from the engine itself, so this is my compromise: more complicated stuff ;)
+    public static final class EventCleanup extends Event {
+
     }
 
 

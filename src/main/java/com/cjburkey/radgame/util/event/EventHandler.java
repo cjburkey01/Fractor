@@ -2,6 +2,7 @@ package com.cjburkey.radgame.util.event;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 /**
  * Created by CJ Burkey on 2019/03/11
@@ -12,6 +13,7 @@ public class EventHandler {
     private final Object2ObjectOpenHashMap<Class<? extends Event>, Object2ObjectOpenHashMap<UUID, IEventCallback<?>>> eventListeners = new Object2ObjectOpenHashMap<>();
     private final Object2ObjectOpenHashMap<UUID, Class<? extends Event>> listenerMapping = new Object2ObjectOpenHashMap<>();
 
+    @SuppressWarnings("UnusedReturnValue")
     public <T extends Event> UUID addListener(Class<T> type, IEventCallback<T> eventCallback) {
         final var uuid = UUID.randomUUID();
         getEventHandler(type).put(uuid, eventCallback);
@@ -32,8 +34,8 @@ public class EventHandler {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Event> void invoke(Class<T> type, T event) {
-        final var eventHandler = getEventHandler(type);
+    public <T extends Event> void invoke(T event) {
+        final var eventHandler = getEventHandler(event.getClass());
         for (IEventCallback<?> listener : eventHandler.values()) {
             ((IEventCallback<T>) listener).accept(event);
             if (event.isCancelled()) return;
@@ -47,6 +49,11 @@ public class EventHandler {
             eventListeners.put(type, eventHandler);
         }
         return eventHandler;
+    }
+
+    @FunctionalInterface
+    public interface IEventCallback<T extends Event> extends Consumer<T> {
+
     }
 
 }
