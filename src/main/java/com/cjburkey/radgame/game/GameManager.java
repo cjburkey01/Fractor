@@ -6,7 +6,10 @@ import com.cjburkey.radgame.Time;
 import com.cjburkey.radgame.component.Camera;
 import com.cjburkey.radgame.component.CameraZoom;
 import com.cjburkey.radgame.component.KeyboardMove;
+import com.cjburkey.radgame.component.render.MaterialRenderer;
+import com.cjburkey.radgame.component.render.MeshRenderer;
 import com.cjburkey.radgame.ecs.Component;
+import com.cjburkey.radgame.ecs.GameObject;
 import com.cjburkey.radgame.ecs.Scene;
 import com.cjburkey.radgame.gl.shader.Shader;
 import com.cjburkey.radgame.glfw.Input;
@@ -16,6 +19,7 @@ import com.cjburkey.radgame.voxel.chunk.IVoxelChunkGenerator;
 import com.cjburkey.radgame.voxel.chunk.VoxelChunkMesher;
 import java.io.IOException;
 
+import static com.cjburkey.radgame.util.math.TransformMath.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
@@ -32,6 +36,8 @@ public class GameManager extends Component {
     private WorldHandler worldHandler;
 
     private double lastTitleUpdateTime = Time.getTime();
+    private final Runtime runtime = Runtime.getRuntime();
+    private GameObject cursor;
 
     @Override
     public void onLoad() {
@@ -52,13 +58,25 @@ public class GameManager extends Component {
         worldHandler = new WorldHandler(0L);
         worldHandler.init(scene, generator, texShader);
 
-        final var chunkGenTest = 9;
+        final var chunkGenTest = 20;
         for (var y = -chunkGenTest; y < chunkGenTest; y++) {
             for (var x = -chunkGenTest; x < chunkGenTest; x++) {
                 final var chunkA = worldHandler.getVoxelWorld().getOrGenChunk(x, y);
                 VoxelChunkMesher.generateMesh(chunkA);
             }
         }
+
+        final var meshRenderer = new MeshRenderer();
+        final var materialRenderer = new MaterialRenderer();
+        cursor = scene.createObjectWith(meshRenderer, materialRenderer);
+
+        meshRenderer.mesh.start()
+                .vert(-0.5f, 0.5f)
+                .vert(-0.5f, -0.5f)
+                .vert(0.5f, -0.5f)
+                .verts(0, 2)
+                .vert(0.5f, 0.5f)
+                .end();
     }
 
     @Override
@@ -71,6 +89,15 @@ public class GameManager extends Component {
     @Override
     public void onUpdate() {
         if (Input.key().wasPressed(GLFW_KEY_ESCAPE)) RadGame.INSTANCE.close();
+
+        // Test cursor
+        final var win = RadGame.INSTANCE.window();
+        final var norm = screenToNormalized(win.getWidth(), win.getHeight(), Input.mousePosf());
+        final var trans = normalizedToOrthoWorld(norm,
+                getOrthographicMatrix(Camera.main.halfHeight, win.getAspectRatio()),
+                getViewMatrix(Camera.main.transform().position, Camera.main.transform().rotation));
+
+        cursor.transform.position.set((float) Math.floor(trans.x), (float) Math.floor(trans.y), 0.0f);
     }
 
     @Override
@@ -78,9 +105,12 @@ public class GameManager extends Component {
         final var now = Time.getTime();
         if ((now - lastTitleUpdateTime) >= (1.0f / 10.0f)) {
             lastTitleUpdateTime = now;
-            RadGame.INSTANCE.window().setTitle(String.format("Fractor 0.0.1 | %.2f FPS | %.2f UPS",
-                    1.0f / Time.renderDeltaf(),
-                    1.0f / Time.updateDeltaf()));
+            RadGame.INSTANCE.window().setTitle(
+                    String.format("Fractor 0.0.1 | %.2f FPS | %.2f UPS | %sMB / %sMB",
+                            1.0f / Time.renderDeltaf(),
+                            1.0f / Time.updateDeltaf(),
+                            (runtime.totalMemory() - runtime.freeMemory()) / 1000000,
+                            runtime.totalMemory() / 1000000));
         }
     }
 

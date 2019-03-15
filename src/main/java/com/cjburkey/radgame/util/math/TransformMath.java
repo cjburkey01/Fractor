@@ -1,12 +1,7 @@
 package com.cjburkey.radgame.util.math;
 
-import org.joml.Matrix4f;
-import org.joml.Matrix4fc;
-import org.joml.Quaternionf;
-import org.joml.Quaternionfc;
-import org.joml.Vector2f;
-import org.joml.Vector2fc;
-import org.joml.Vector3fc;
+import java.lang.Math;
+import org.joml.*;
 
 /**
  * Created by CJ Burkey on 2019/03/03
@@ -57,6 +52,16 @@ public final class TransformMath {
         final var x = Interpolate.map(screen.x(), 0, windowWidth, -1.0f, 1.0f);
         final var y = Interpolate.map(screen.y(), 0, windowHeight, -1.0f, 1.0f);
         return new Vector2f(x, y);
+    }
+
+    public static Vector3f normalizedToOrthoWorld(final Vector2fc normalized,
+                                                  final Matrix4fc orthoMatrix,
+                                                  final Matrix4fc viewMatrix) {
+        final var pos = new Vector4f(normalized, 0.0f, 1.0f);
+        final var tmpMat = new Matrix4f();
+        pos.mul(orthoMatrix.invert(tmpMat));
+        pos.mul(viewMatrix.invert(tmpMat));
+        return new Vector3f(pos.x, pos.y, pos.z);
     }
 
 }

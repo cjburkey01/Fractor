@@ -24,6 +24,9 @@ public class TexturedSquareVoxel extends SingleTexturedVoxel {
         final var cy = voxelState.getPosInChunk().y();
         final var uv = voxelState.getWorld().getVoxelTextureAtlas().getUv(getPrimaryTextureId());
 
+        // TODO: Z
+//        final var z = Interpolate.map(voxelState.getDepth(), );
+
         mesh
                 // 0
                 .vert(cx, cy + 1.0f).uv(uv.minX, uv.minY)

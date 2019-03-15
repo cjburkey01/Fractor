@@ -10,6 +10,9 @@ import com.cjburkey.radgame.glfw.Window;
  */
 public class MeshRenderHandler {
 
+    private MeshRenderHandler() {
+    }
+
     public static void render(Mesh mesh, Material material, Window window, Camera camera, Transform transform) {
         if (mesh == null || material == null || window == null || camera == null || transform == null) return;
 
