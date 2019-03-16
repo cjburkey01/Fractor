@@ -1,4 +1,4 @@
-package com.cjburkey.radgame.gl.shader;
+package com.cjburkey.radgame.shader;
 
 import com.cjburkey.radgame.RadGame;
 import com.cjburkey.radgame.ResourceLocation;

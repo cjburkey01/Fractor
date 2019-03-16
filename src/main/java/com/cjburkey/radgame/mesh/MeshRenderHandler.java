@@ -1,9 +1,9 @@
-package com.cjburkey.radgame.gl;
+package com.cjburkey.radgame.mesh;
 
 import com.cjburkey.radgame.component.Camera;
 import com.cjburkey.radgame.component.Transform;
-import com.cjburkey.radgame.gl.shader.Material;
 import com.cjburkey.radgame.glfw.Window;
+import com.cjburkey.radgame.shader.Material;
 
 /**
  * Created by CJ Burkey on 2019/03/04

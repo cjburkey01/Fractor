@@ -1,4 +1,4 @@
-package com.cjburkey.radgame.voxel.chunk;
+package com.cjburkey.radgame.chunk;
 
 /**
  * Created by CJ Burkey on 2019/03/08

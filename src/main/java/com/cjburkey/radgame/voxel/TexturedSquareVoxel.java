@@ -1,8 +1,8 @@
 package com.cjburkey.radgame.voxel;
 
 import com.cjburkey.radgame.ResourceLocation;
-import com.cjburkey.radgame.gl.Mesh;
-import com.cjburkey.radgame.voxel.world.VoxelState;
+import com.cjburkey.radgame.mesh.Mesh;
+import com.cjburkey.radgame.world.VoxelState;
 
 /**
  * Created by CJ Burkey on 2019/03/06

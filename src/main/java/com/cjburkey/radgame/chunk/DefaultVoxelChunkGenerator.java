@@ -1,8 +1,8 @@
-package com.cjburkey.radgame.voxel.chunk;
+package com.cjburkey.radgame.chunk;
 
 import com.cjburkey.radgame.util.noise.NoiseState;
 import com.cjburkey.radgame.voxel.Voxels;
-import com.cjburkey.radgame.voxel.world.Voxel;
+import com.cjburkey.radgame.world.Voxel;
 
 /**
  * Created by CJ Burkey on 2019/03/08

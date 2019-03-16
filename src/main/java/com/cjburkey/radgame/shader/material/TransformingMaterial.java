@@ -1,10 +1,10 @@
-package com.cjburkey.radgame.gl.shader.material;
+package com.cjburkey.radgame.shader.material;
 
 import com.cjburkey.radgame.component.Camera;
 import com.cjburkey.radgame.component.Transform;
-import com.cjburkey.radgame.gl.shader.Material;
-import com.cjburkey.radgame.gl.shader.Shader;
 import com.cjburkey.radgame.glfw.Window;
+import com.cjburkey.radgame.shader.Material;
+import com.cjburkey.radgame.shader.Shader;
 
 import static com.cjburkey.radgame.util.math.TransformMath.*;
 

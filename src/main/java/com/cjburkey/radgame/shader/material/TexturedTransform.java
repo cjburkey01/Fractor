@@ -1,8 +1,8 @@
-package com.cjburkey.radgame.gl.shader.material;
+package com.cjburkey.radgame.shader.material;
 
 import com.cjburkey.radgame.component.Transform;
-import com.cjburkey.radgame.gl.Texture;
-import com.cjburkey.radgame.gl.shader.Shader;
+import com.cjburkey.radgame.shader.Shader;
+import com.cjburkey.radgame.texture.Texture;
 
 /**
  * Created by CJ Burkey on 2019/03/05

@@ -1,4 +1,4 @@
-package com.cjburkey.radgame.gl;
+package com.cjburkey.radgame.texture;
 
 import com.cjburkey.radgame.ResourceLocation;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -15,6 +15,8 @@ import static org.lwjgl.system.MemoryStack.*;
  * Created by CJ Burkey on 2019/03/09
  */
 public class TextureAtlas {
+
+    private static final float EPSILON = 0.0001f;
 
     private final Texture texture;
     private final Object2ObjectOpenHashMap<ResourceLocation, Rectanglef> mapping;
@@ -92,7 +94,7 @@ public class TextureAtlas {
 
             final var uvX = x * uvW;
             final var uvY = y * uvW;
-            atlas.put(resourceLocation, new Rectanglef(uvX, uvY, uvX + uvW, uvY + uvW));
+            atlas.put(resourceLocation, new Rectanglef(uvX + EPSILON, uvY + EPSILON, uvX + uvW - EPSILON, uvY + uvW - EPSILON));
 
             x++;
             if (x >= textureWidth) {

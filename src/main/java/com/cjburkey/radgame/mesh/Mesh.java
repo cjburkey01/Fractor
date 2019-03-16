@@ -1,4 +1,4 @@
-package com.cjburkey.radgame.gl;
+package com.cjburkey.radgame.mesh;
 
 import com.cjburkey.radgame.RadGame;
 import com.cjburkey.radgame.game.GameManager;

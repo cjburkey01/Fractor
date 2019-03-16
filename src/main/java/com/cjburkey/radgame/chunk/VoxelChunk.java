@@ -1,15 +1,15 @@
-package com.cjburkey.radgame.voxel.chunk;
+package com.cjburkey.radgame.chunk;
 
 import com.cjburkey.radgame.component.render.MaterialRenderer;
 import com.cjburkey.radgame.component.render.MeshRenderer;
 import com.cjburkey.radgame.ecs.GameObject;
 import com.cjburkey.radgame.ecs.Scene;
-import com.cjburkey.radgame.gl.TextureAtlas;
-import com.cjburkey.radgame.gl.shader.Shader;
-import com.cjburkey.radgame.gl.shader.material.TexturedTransform;
-import com.cjburkey.radgame.voxel.world.Voxel;
-import com.cjburkey.radgame.voxel.world.VoxelState;
-import com.cjburkey.radgame.voxel.world.VoxelWorld;
+import com.cjburkey.radgame.shader.Shader;
+import com.cjburkey.radgame.shader.material.TexturedTransform;
+import com.cjburkey.radgame.texture.TextureAtlas;
+import com.cjburkey.radgame.world.Voxel;
+import com.cjburkey.radgame.world.VoxelState;
+import com.cjburkey.radgame.world.VoxelWorld;
 import java.util.Objects;
 import java.util.Optional;
 import org.joml.Vector2i;

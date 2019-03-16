@@ -1,7 +1,7 @@
 package com.cjburkey.radgame.component.render;
 
 import com.cjburkey.radgame.ecs.Component;
-import com.cjburkey.radgame.gl.shader.Material;
+import com.cjburkey.radgame.shader.Material;
 
 /**
  * Created by CJ Burkey on 2019/03/03

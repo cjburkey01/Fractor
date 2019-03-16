@@ -1,4 +1,4 @@
-package com.cjburkey.radgame.gl.shader;
+package com.cjburkey.radgame.shader;
 
 import com.cjburkey.radgame.component.Camera;
 import com.cjburkey.radgame.component.Transform;

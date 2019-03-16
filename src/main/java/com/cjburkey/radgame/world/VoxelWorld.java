@@ -1,10 +1,10 @@
-package com.cjburkey.radgame.voxel.world;
+package com.cjburkey.radgame.world;
 
+import com.cjburkey.radgame.chunk.IVoxelChunkGenerator;
+import com.cjburkey.radgame.chunk.VoxelChunk;
 import com.cjburkey.radgame.ecs.Scene;
-import com.cjburkey.radgame.gl.TextureAtlas;
-import com.cjburkey.radgame.gl.shader.Shader;
-import com.cjburkey.radgame.voxel.chunk.IVoxelChunkGenerator;
-import com.cjburkey.radgame.voxel.chunk.VoxelChunk;
+import com.cjburkey.radgame.shader.Shader;
+import com.cjburkey.radgame.texture.TextureAtlas;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Objects;
 import org.joml.Vector2i;

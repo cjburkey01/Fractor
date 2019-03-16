@@ -1,6 +1,6 @@
-package com.cjburkey.radgame.voxel.world;
+package com.cjburkey.radgame.world;
 
-import com.cjburkey.radgame.voxel.chunk.VoxelChunk;
+import com.cjburkey.radgame.chunk.VoxelChunk;
 import java.util.Objects;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;

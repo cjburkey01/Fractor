@@ -1,16 +1,16 @@
 package com.cjburkey.radgame.game;
 
 import com.cjburkey.radgame.ResourceLocation;
+import com.cjburkey.radgame.chunk.IVoxelChunkGenerator;
 import com.cjburkey.radgame.ecs.Scene;
-import com.cjburkey.radgame.gl.TextureAtlas;
-import com.cjburkey.radgame.gl.shader.Shader;
+import com.cjburkey.radgame.shader.Shader;
+import com.cjburkey.radgame.texture.TextureAtlas;
 import com.cjburkey.radgame.util.io.Log;
 import com.cjburkey.radgame.util.registry.Registry;
 import com.cjburkey.radgame.voxel.ITexturedVoxel;
 import com.cjburkey.radgame.voxel.Voxels;
-import com.cjburkey.radgame.voxel.chunk.IVoxelChunkGenerator;
-import com.cjburkey.radgame.voxel.world.Voxel;
-import com.cjburkey.radgame.voxel.world.VoxelWorld;
+import com.cjburkey.radgame.world.Voxel;
+import com.cjburkey.radgame.world.VoxelWorld;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Collections;
 

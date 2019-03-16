@@ -2,7 +2,7 @@ package com.cjburkey.radgame.voxel;
 
 import com.cjburkey.radgame.game.GameManager;
 import com.cjburkey.radgame.game.VoxelTypeRegisterEvent;
-import com.cjburkey.radgame.voxel.world.Voxel;
+import com.cjburkey.radgame.world.Voxel;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 /**
