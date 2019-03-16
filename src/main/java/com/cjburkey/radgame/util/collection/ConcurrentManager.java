@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
-public final class ConcurrentManager<K, T extends IConcurrentObject> {
+public final class ConcurrentManager<K, T extends ConcurrentManager.IConcurrentObject> {
 
     private final ConcurrentLinkedQueue<QueuedObject> toAdd = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<QueuedObject> toRemove = new ConcurrentLinkedQueue<>();
@@ -76,6 +76,22 @@ public final class ConcurrentManager<K, T extends IConcurrentObject> {
             objects.put(key, list);
         }
         return list;
+    }
+
+    public interface IConcurrentObject {
+
+        void onLoad();
+
+        void onRemove();
+
+        int maxPerObject();
+
+        @Override
+        boolean equals(Object other);
+
+        @Override
+        int hashCode();
+
     }
 
     private final class QueuedObject {

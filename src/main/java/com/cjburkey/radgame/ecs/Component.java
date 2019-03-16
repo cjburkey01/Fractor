@@ -1,10 +1,10 @@
 package com.cjburkey.radgame.ecs;
 
 import com.cjburkey.radgame.component.Transform;
-import com.cjburkey.radgame.util.collection.IConcurrentObject;
+import com.cjburkey.radgame.util.collection.ConcurrentManager;
 import java.util.Objects;
 
-public abstract class Component implements IConcurrentObject {
+public abstract class Component implements ConcurrentManager.IConcurrentObject {
 
     private GameObject parent;
     private Transform parentTransform;

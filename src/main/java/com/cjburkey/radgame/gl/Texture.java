@@ -66,8 +66,8 @@ public class Texture implements AutoCloseable {
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             glTexParameteri(bindLocation, GL_TEXTURE_MIN_FILTER, minFilter);
             glTexParameteri(bindLocation, GL_TEXTURE_MAG_FILTER, magFilter);
-            glTexParameteri(bindLocation, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(bindLocation, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(bindLocation, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(bindLocation, GL_TEXTURE_WRAP_T, GL_REPEAT);
         }
     }
 

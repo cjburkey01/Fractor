@@ -55,6 +55,7 @@ public class RadGame implements Runnable, Closeable {
         var currentTime = Time.getTime();
         var accumulator = 0.0;
         scene.flush();
+
         while (running) {
             final var newTime = Time.getTime();
             final var frameTime = newTime - currentTime;
@@ -76,7 +77,7 @@ public class RadGame implements Runnable, Closeable {
         Log.debug("Initializing");
 
         initWindow();
-        window.setClearColor(0.48f, 0.74f, 1.0f);
+        window.setClearColor(0.48f, 0.74f, 1.0f);   // Sky blue :)
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);

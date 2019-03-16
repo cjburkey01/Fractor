@@ -36,7 +36,7 @@ public final class DefaultVoxelChunkGenerator implements IVoxelChunkGenerator {
         // The world is all generated on the "midground" layer, which is i=1
         for (var x = 0; x < VoxelChunk.CHUNK_SIZE; x++) {
             // Stone
-            var noiseAt = getNoise(noise, x);
+            final var noiseAt = getNoise(noise, x);
             var localY = (noiseAt - h) - dirtThickness - 1;
             if (localY >= 0) {
                 if (localY >= VoxelChunk.CHUNK_SIZE) localY = (VoxelChunk.CHUNK_SIZE - 1);

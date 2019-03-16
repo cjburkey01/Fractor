@@ -5,13 +5,14 @@ import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.Time;
 import com.cjburkey.radgame.component.Camera;
 import com.cjburkey.radgame.component.CameraZoom;
+import com.cjburkey.radgame.component.CursorVoxelPicker;
 import com.cjburkey.radgame.component.KeyboardMove;
 import com.cjburkey.radgame.component.render.MaterialRenderer;
 import com.cjburkey.radgame.component.render.MeshRenderer;
 import com.cjburkey.radgame.ecs.Component;
-import com.cjburkey.radgame.ecs.GameObject;
 import com.cjburkey.radgame.ecs.Scene;
 import com.cjburkey.radgame.gl.shader.Shader;
+import com.cjburkey.radgame.gl.shader.material.ColoredTransform;
 import com.cjburkey.radgame.glfw.Input;
 import com.cjburkey.radgame.util.event.EventHandler;
 import com.cjburkey.radgame.voxel.chunk.DefaultVoxelChunkGenerator;
@@ -19,7 +20,6 @@ import com.cjburkey.radgame.voxel.chunk.IVoxelChunkGenerator;
 import com.cjburkey.radgame.voxel.chunk.VoxelChunkMesher;
 import java.io.IOException;
 
-import static com.cjburkey.radgame.util.math.TransformMath.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
@@ -33,11 +33,12 @@ public class GameManager extends Component {
     private static Scene scene;
 
     private Shader texShader;
+    private Shader colorShader;
     private WorldHandler worldHandler;
+    private CursorVoxelPicker voxelPicker;
 
     private double lastTitleUpdateTime = Time.getTime();
     private final Runtime runtime = Runtime.getRuntime();
-    private GameObject cursor;
 
     @Override
     public void onLoad() {
@@ -66,38 +67,60 @@ public class GameManager extends Component {
             }
         }
 
-        final var meshRenderer = new MeshRenderer();
-        final var materialRenderer = new MaterialRenderer();
-        cursor = scene.createObjectWith(meshRenderer, materialRenderer);
+        buildCursorVoxelPicker();
+    }
 
+    private void buildCursorVoxelPicker() {
+        voxelPicker = new CursorVoxelPicker();
+        final var materialRenderer = new MaterialRenderer();
+        final var meshRenderer = new MeshRenderer();
+        final var object = scene.createObjectWith(materialRenderer, meshRenderer, voxelPicker);
+        object.transform.position.z = 0.6f;
+
+        final var material = new ColoredTransform(colorShader);
+        materialRenderer.material = material;
+        material.color.set(1.0f);
+
+        final var thickness = 0.075f;
         meshRenderer.mesh.start()
-                .vert(-0.5f, 0.5f)
-                .vert(-0.5f, -0.5f)
-                .vert(0.5f, -0.5f)
+                // Top
+                .vert(0.0f, 1.0f)
+                .vert(0.0f, 1.0f - thickness)
+                .vert(1.0f, 1.0f - thickness)
                 .verts(0, 2)
-                .vert(0.5f, 0.5f)
+                .vert(1.0f, 1.0f)
+
+                // Bottom
+                .vert(0.0f, thickness)
+                .vert(0.0f, 0.0f)
+                .vert(1.0f, 0.0f)
+                .verts(4, 6)
+                .vert(1.0f, thickness)
+
+                // Left
+                .vert(0.0f, 1.0f - thickness)
+                .vert(0.0f, thickness)
+                .vert(thickness, thickness)
+                .verts(8, 10)
+                .vert(thickness, 1.0f - thickness)
+
+                // Right
+                .vert(1.0f - thickness, 1.0f - thickness)
+                .vert(1.0f - thickness, thickness)
+                .vert(1.0f, thickness)
+                .verts(12, 14)
+                .vert(1.0f, 1.0f - thickness)
                 .end();
     }
 
     @Override
     public void onRemove() {
-        texShader.close();
-
         EVENT_BUS.invoke(new RadGame.EventCleanup());
     }
 
     @Override
     public void onUpdate() {
         if (Input.key().wasPressed(GLFW_KEY_ESCAPE)) RadGame.INSTANCE.close();
-
-        // Test cursor
-        final var win = RadGame.INSTANCE.window();
-        final var norm = screenToNormalized(win.getWidth(), win.getHeight(), Input.mousePosf());
-        final var trans = normalizedToOrthoWorld(norm,
-                getOrthographicMatrix(Camera.main.halfHeight, win.getAspectRatio()),
-                getViewMatrix(Camera.main.transform().position, Camera.main.transform().rotation));
-
-        cursor.transform.position.set((float) Math.floor(trans.x), (float) Math.floor(trans.y), 0.0f);
     }
 
     @Override
@@ -118,11 +141,20 @@ public class GameManager extends Component {
         return worldHandler;
     }
 
+    public CursorVoxelPicker getVoxelPicker() {
+        return voxelPicker;
+    }
+
     private void initShaders() throws IOException {
         texShader = Shader.builder()
                 .setVertexShader(new ResourceLocation("radgame", "shader/texVert", "glsl"))
                 .setFragmentShader(new ResourceLocation("radgame", "shader/texFrag", "glsl"))
                 .addUniforms("projectionMatrix", "viewMatrix", "modelMatrix", "tex")
+                .build();
+        colorShader = Shader.builder()
+                .setVertexShader(new ResourceLocation("radgame", "shader/colorVert", "glsl"))
+                .setFragmentShader(new ResourceLocation("radgame", "shader/colorFrag", "glsl"))
+                .addUniforms("projectionMatrix", "viewMatrix", "modelMatrix", "color")
                 .build();
     }
 
