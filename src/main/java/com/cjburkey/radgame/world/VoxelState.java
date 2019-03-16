@@ -24,7 +24,7 @@ public final class VoxelState {
     private final boolean isAir;
 
     private VoxelState() {
-        voxel = Objects.requireNonNull(Voxels.AIR);
+        voxel = Voxels.AIR;
         chunk = null;
         world = null;
         posInChunk = null;
