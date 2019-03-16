@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 import org.joml.Rectanglef;
 import org.lwjgl.system.MemoryStack;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.stb.STBImage.*;
 import static org.lwjgl.system.MemoryStack.*;
 
@@ -53,7 +53,11 @@ public class TextureAtlas {
         if (textures.length == 0) return null;
         final var textureWidth = getTextureSize(textures.length);
         final var mipmapCount = Texture.getMipmapCount(textureWidth * tileSize);
-        final var atlasTexture = new Texture(GL_TEXTURE_2D, glGenTextures(), tileSize, tileSize, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_RGBA);
+        final var atlasTexture = new Texture(GL_TEXTURE_2D, glGenTextures(), tileSize, tileSize)
+                .setMinFilter(GL_NEAREST_MIPMAP_LINEAR)
+                .setMagFilter(GL_NEAREST)
+                .setWrapS(GL_CLAMP_TO_EDGE)
+                .setWrapT(GL_CLAMP_TO_EDGE);
         final var atlas = new Object2ObjectOpenHashMap<ResourceLocation, Rectanglef>();
 
         atlasTexture.bind();

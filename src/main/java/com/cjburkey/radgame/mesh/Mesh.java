@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.shorts.ShortArrayList;
+import java.io.Closeable;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.function.IntConsumer;
@@ -24,7 +25,7 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 @SuppressWarnings({"WeakerAccess", "UnusedReturnValue", "unused"})
-public class Mesh implements AutoCloseable {
+public class Mesh implements Closeable {
 
     private static final int FLOATS_PER_VERTEX = 3;
 

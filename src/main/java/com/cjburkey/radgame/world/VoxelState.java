@@ -1,6 +1,8 @@
 package com.cjburkey.radgame.world;
 
 import com.cjburkey.radgame.chunk.VoxelChunk;
+import com.cjburkey.radgame.voxel.Voxel;
+import com.cjburkey.radgame.voxel.Voxels;
 import java.util.Objects;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
@@ -22,7 +24,7 @@ public final class VoxelState {
     private final boolean isAir;
 
     private VoxelState() {
-        voxel = null;
+        voxel = Objects.requireNonNull(Voxels.AIR);
         chunk = null;
         world = null;
         posInChunk = null;

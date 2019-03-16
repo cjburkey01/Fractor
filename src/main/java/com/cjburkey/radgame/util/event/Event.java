@@ -10,7 +10,7 @@ public abstract class Event {
     protected boolean cancellable = false;
 
     public boolean isCancelled() {
-        return cancelled;
+        return cancellable && cancelled;
     }
 
     public void cancel() {

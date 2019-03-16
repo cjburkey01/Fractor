@@ -8,7 +8,7 @@ import java.util.function.Consumer;
  * Created by CJ Burkey on 2019/03/11
  */
 @SuppressWarnings("unused")
-public class EventHandler {
+public final class EventHandler {
 
     private final Object2ObjectOpenHashMap<Class<? extends Event>, Object2ObjectOpenHashMap<UUID, IEventCallback<?>>> eventListeners = new Object2ObjectOpenHashMap<>();
     private final Object2ObjectOpenHashMap<UUID, Class<? extends Event>> listenerMapping = new Object2ObjectOpenHashMap<>();

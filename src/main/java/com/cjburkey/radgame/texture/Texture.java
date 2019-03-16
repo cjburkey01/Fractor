@@ -4,6 +4,7 @@ import com.cjburkey.radgame.RadGame;
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.game.GameManager;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -21,38 +22,34 @@ import static org.lwjgl.system.MemoryUtil.*;
 /**
  * Created by CJ Burkey on 2019/03/05
  */
-@SuppressWarnings("WeakerAccess")
-public class Texture implements AutoCloseable {
+@SuppressWarnings({"WeakerAccess", "unused"})
+public class Texture implements Closeable {
 
-    private static Int2IntOpenHashMap currentTextures = new Int2IntOpenHashMap();
+    private static final Int2IntOpenHashMap currentTextures = new Int2IntOpenHashMap();
 
     static {
         currentTextures.defaultReturnValue(-1);
     }
 
     final int bindLocation;
-    final int texture;
-    private boolean hasMipmaps;
-    public final int width;
-    public final int height;
-    private final int minFilter;
-    private final int magFilter;
-    private final int type;
+    private final int texture;
+
+    final int width;
+    final int height;
+
+    private int minFilter = GL_NEAREST_MIPMAP_NEAREST;
+    private int magFilter = GL_NEAREST;
+    private int textureWrapS = GL_REPEAT;
+    private int textureWrapT = GL_REPEAT;
 
     Texture(final int bindLocation,
             final int texture,
             final int width,
-            final int height,
-            final int minFilter,
-            final int magFilter,
-            final int type) {
+            final int height) {
         this.bindLocation = bindLocation;
         this.texture = texture;
         this.width = width;
         this.height = height;
-        this.minFilter = minFilter;
-        this.magFilter = magFilter;
-        this.type = type;
 
         GameManager.EVENT_BUS.addListener(RadGame.EventCleanup.class, ignored -> this.close());
     }
@@ -66,8 +63,8 @@ public class Texture implements AutoCloseable {
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             glTexParameteri(bindLocation, GL_TEXTURE_MIN_FILTER, minFilter);
             glTexParameteri(bindLocation, GL_TEXTURE_MAG_FILTER, magFilter);
-            glTexParameteri(bindLocation, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(bindLocation, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(bindLocation, GL_TEXTURE_WRAP_S, textureWrapS);
+            glTexParameteri(bindLocation, GL_TEXTURE_WRAP_T, textureWrapT);
         }
     }
 
@@ -85,11 +82,28 @@ public class Texture implements AutoCloseable {
     }
 
     private void genMipmaps() {
-        if (!hasMipmaps) {
-            bind();
-            glGenerateMipmap(bindLocation);
-            hasMipmaps = true;
-        }
+        bind();
+        glGenerateMipmap(bindLocation);
+    }
+
+    public Texture setMinFilter(int minFilter) {
+        this.minFilter = minFilter;
+        return this;
+    }
+
+    public Texture setMagFilter(int magFilter) {
+        this.magFilter = magFilter;
+        return this;
+    }
+
+    public Texture setWrapS(int textureWrapS) {
+        this.textureWrapS = textureWrapS;
+        return this;
+    }
+
+    public Texture setWrapT(int textureWrapT) {
+        this.textureWrapT = textureWrapT;
+        return this;
     }
 
     @Override
@@ -121,7 +135,7 @@ public class Texture implements AutoCloseable {
         final var newY = (y >> mipmap);
 
         bind();
-        glTexSubImage2D(bindLocation, mipmap, newX, newY, newW, newH, type, GL_UNSIGNED_BYTE, image);
+        glTexSubImage2D(bindLocation, mipmap, newX, newY, newW, newH, GL_RGBA, GL_UNSIGNED_BYTE, image);
 
         if (image != input) memFree(image);
     }
@@ -171,10 +185,8 @@ public class Texture implements AutoCloseable {
                                          final int height,
                                          final int imageType,
                                          final ByteBuffer rawImage,
-                                         final int minFilter,
-                                         final int magFilter,
                                          final boolean mipmap) {
-        var texture = new Texture(bindLocation, glGenTextures(), width, height, minFilter, magFilter, GL_RGBA);
+        var texture = new Texture(bindLocation, glGenTextures(), width, height);
         texture.bind();
         glTexImage2D(bindLocation, 0, imageType, width, height, 0, imageType, GL_UNSIGNED_BYTE, rawImage);
         if (mipmap) texture.genMipmaps();
@@ -183,8 +195,6 @@ public class Texture implements AutoCloseable {
 
     public static Texture readStream(final int bindLocation,
                                      final InputStream stream,
-                                     final int minFilter,
-                                     final int magFilter,
                                      final boolean mipmap) throws IOException {
         ByteBuffer rawImgBuffer = null;
         try (MemoryStack stack = stackPush()) {
@@ -200,8 +210,6 @@ public class Texture implements AutoCloseable {
                     height.get(0),
                     GL_RGBA,
                     rawImgBuffer,
-                    minFilter,
-                    magFilter,
                     mipmap);
         } finally {
             if (rawImgBuffer != null) stbi_image_free(rawImgBuffer);
@@ -209,20 +217,12 @@ public class Texture implements AutoCloseable {
     }
 
     public static Texture readStream(final int bindLocation,
-                                     final InputStream stream,
-                                     final int minFilter,
-                                     final int magFilter) throws IOException {
-        return readStream(bindLocation, stream, minFilter, magFilter, true);
-    }
-
-    public static Texture readStream(final InputStream stream,
-                                     final int minFilter,
-                                     final int magFilter) throws IOException {
-        return readStream(GL_TEXTURE_2D, stream, minFilter, magFilter);
+                                     final InputStream stream) throws IOException {
+        return readStream(bindLocation, stream, true);
     }
 
     public static Texture readStream(final InputStream stream) throws IOException {
-        return readStream(stream, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST);
+        return readStream(GL_TEXTURE_2D, stream);
     }
 
     public static Texture read(final ResourceLocation location) throws IOException {

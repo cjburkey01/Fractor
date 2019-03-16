@@ -1,13 +1,14 @@
-package com.cjburkey.radgame.chunk;
+package com.cjburkey.radgame.world.generate;
 
+import com.cjburkey.radgame.chunk.VoxelChunk;
 import com.cjburkey.radgame.util.noise.NoiseState;
+import com.cjburkey.radgame.voxel.Voxel;
 import com.cjburkey.radgame.voxel.Voxels;
-import com.cjburkey.radgame.world.Voxel;
 
 /**
  * Created by CJ Burkey on 2019/03/08
  */
-public final class DefaultVoxelChunkGenerator implements IVoxelChunkGenerator {
+public final class VoxelChunkFeatureGenerator implements IVoxelChunkHeightmapGenerator {
 
     private final double noiseAmplitude;
     private final double noiseScale;
@@ -18,7 +19,7 @@ public final class DefaultVoxelChunkGenerator implements IVoxelChunkGenerator {
     private final Voxel voxelSubTopTerrain = Voxels.DIRT;
     private final Voxel voxelTopTerrain = Voxels.GRASS;
 
-    public DefaultVoxelChunkGenerator(double noiseAmplitude,
+    public VoxelChunkFeatureGenerator(double noiseAmplitude,
                                       double noiseScale,
                                       int worldBaseHeight,
                                       int dirtThickness) {

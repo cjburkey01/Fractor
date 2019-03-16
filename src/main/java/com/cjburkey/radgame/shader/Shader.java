@@ -6,6 +6,7 @@ import com.cjburkey.radgame.game.GameManager;
 import com.cjburkey.radgame.util.io.Log;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.Collections;
@@ -19,7 +20,7 @@ import org.lwjgl.system.MemoryStack;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.system.MemoryStack.*;
 
-public class Shader implements AutoCloseable {
+public class Shader implements Closeable {
 
     private static int currentProgram = -1;
     private final int shaderProgram;

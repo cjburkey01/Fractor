@@ -1,8 +1,9 @@
-package com.cjburkey.radgame.world;
+package com.cjburkey.radgame.voxel;
 
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.mesh.Mesh;
 import com.cjburkey.radgame.util.registry.IRegistryItem;
+import com.cjburkey.radgame.world.VoxelState;
 import java.util.Objects;
 
 /**

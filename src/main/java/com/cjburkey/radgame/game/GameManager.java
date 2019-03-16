@@ -3,8 +3,7 @@ package com.cjburkey.radgame.game;
 import com.cjburkey.radgame.RadGame;
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.Time;
-import com.cjburkey.radgame.chunk.DefaultVoxelChunkGenerator;
-import com.cjburkey.radgame.chunk.IVoxelChunkGenerator;
+import com.cjburkey.radgame.chunk.VoxelChunk;
 import com.cjburkey.radgame.chunk.VoxelChunkMesher;
 import com.cjburkey.radgame.component.Camera;
 import com.cjburkey.radgame.component.CameraZoom;
@@ -18,6 +17,12 @@ import com.cjburkey.radgame.glfw.Input;
 import com.cjburkey.radgame.shader.Shader;
 import com.cjburkey.radgame.shader.material.ColoredTransform;
 import com.cjburkey.radgame.util.event.EventHandler;
+import com.cjburkey.radgame.util.io.Log;
+import com.cjburkey.radgame.util.math.Interpolate;
+import com.cjburkey.radgame.util.noise.NoiseState;
+import com.cjburkey.radgame.voxel.Voxels;
+import com.cjburkey.radgame.world.generate.IVoxelChunkHeightmapGenerator;
+import com.cjburkey.radgame.world.generate.VoxelChunkHeightmapGenerator;
 import java.io.IOException;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -52,22 +57,39 @@ public class GameManager extends Component {
         scene.createObjectWith(new Camera(), new CameraZoom(), new KeyboardMove());
         Camera.main.halfHeight = 6.5f;
 
-        initWorld(new DefaultVoxelChunkGenerator(15.0f, 75.0f, 0, 3));
+        initWorld(new VoxelChunkHeightmapGenerator(15.0f, 75.0f, 0, 3));
     }
 
-    private void initWorld(IVoxelChunkGenerator generator) {
+    private void initWorld(IVoxelChunkHeightmapGenerator generator) {
+        buildCursorVoxelPicker();
+
+        // TODO: EXPERIMENT! THIS IS NOT PRODUCTION-LEVEL CODE HERE!
+        EVENT_BUS.addListener(WorldHandler.EventRegisterFeatureGenerators.class, e -> e.register(chunk -> {
+            final var worldPos = chunk.getPosInWorld();
+            final var noiseState = new NoiseState(chunk.world.seed, 1.0f, 35.0f, worldPos.x(), worldPos.y());
+
+            for (var y = 0; y < VoxelChunk.CHUNK_SIZE; y++) {
+                for (var x = 0; x < VoxelChunk.CHUNK_SIZE; x++) {
+                    final var noise = Interpolate.map(noiseState.get(x, y), -1.0f, 1.0f, 0.0f, 1.0f);
+                    final var voxelAt = chunk.getVoxelState(x, y, 1);
+                    if (voxelAt != null && voxelAt.getVoxel().equals(Voxels.STONE) && noise >= 0.9f)
+                        chunk.setVoxel(x, y, 1, Voxels.DIRT);
+                }
+            }
+        }));
+
         worldHandler = new WorldHandler(0L);
         worldHandler.init(scene, generator, texShader);
 
-        final var chunkGenTest = 20;
+        final var chunkGenTest = 15;
+        Log.debug("Generating debug chunks: {}x{}", chunkGenTest * 2, chunkGenTest * 2);
         for (var y = -chunkGenTest; y < chunkGenTest; y++) {
             for (var x = -chunkGenTest; x < chunkGenTest; x++) {
                 final var chunkA = worldHandler.getVoxelWorld().getOrGenChunk(x, y);
                 VoxelChunkMesher.generateMesh(chunkA);
             }
         }
-
-        buildCursorVoxelPicker();
+        Log.debug("Generated debug chunks: {},{} to {},{}", -chunkGenTest, -chunkGenTest, chunkGenTest - 1, chunkGenTest - 1);
     }
 
     private void buildCursorVoxelPicker() {

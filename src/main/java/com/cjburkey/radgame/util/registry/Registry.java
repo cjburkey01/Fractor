@@ -44,6 +44,7 @@ public final class Registry<T extends IRegistryItem> {
 
     public void finish() {
         finished = true;
+        items.trim();
     }
 
     public boolean isFinished() {

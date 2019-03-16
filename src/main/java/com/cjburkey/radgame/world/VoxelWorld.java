@@ -1,10 +1,12 @@
 package com.cjburkey.radgame.world;
 
-import com.cjburkey.radgame.chunk.IVoxelChunkGenerator;
 import com.cjburkey.radgame.chunk.VoxelChunk;
 import com.cjburkey.radgame.ecs.Scene;
 import com.cjburkey.radgame.shader.Shader;
 import com.cjburkey.radgame.texture.TextureAtlas;
+import com.cjburkey.radgame.voxel.Voxel;
+import com.cjburkey.radgame.world.generate.IVoxelChunkFeatureGenerator;
+import com.cjburkey.radgame.world.generate.IVoxelChunkHeightmapGenerator;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Objects;
 import org.joml.Vector2i;
@@ -19,7 +21,8 @@ import static java.lang.Math.*;
 public final class VoxelWorld {
 
     private final Scene scene;
-    private final IVoxelChunkGenerator voxelChunkGenerator;
+    private final IVoxelChunkHeightmapGenerator voxelChunkGenerator;
+    private final IVoxelChunkFeatureGenerator[] featureQueue;
     private final Shader voxelShader;
     private final TextureAtlas voxelTextureAtlas;
     private final Object2ObjectOpenHashMap<Vector2ic, VoxelChunk> chunks = new Object2ObjectOpenHashMap<>();
@@ -27,22 +30,32 @@ public final class VoxelWorld {
 
     public VoxelWorld(final long seed,
                       final Scene scene,
-                      final IVoxelChunkGenerator voxelChunkGenerator,
+                      final IVoxelChunkHeightmapGenerator voxelChunkGenerator,
+                      final IVoxelChunkFeatureGenerator[] features,
                       final Shader voxelShader,
                       final TextureAtlas voxelTextureAtlas) {
         this.seed = seed;
         this.scene = Objects.requireNonNull(scene);
         this.voxelChunkGenerator = Objects.requireNonNull(voxelChunkGenerator);
+        System.arraycopy(Objects.requireNonNull(features), 0, featureQueue = new IVoxelChunkFeatureGenerator[features.length], 0, features.length);
         this.voxelShader = Objects.requireNonNull(voxelShader);
         this.voxelTextureAtlas = Objects.requireNonNull(voxelTextureAtlas);
     }
 
-    public VoxelChunk getOrGenChunk(final Vector2ic chunkPos) {
+    public VoxelChunk getChunkOrNewRaw(final Vector2ic chunkPos) {
         if (chunks.containsKey(chunkPos)) return chunks.get(chunkPos);
-
         final var chunk = new VoxelChunk(scene, chunkPos, this, voxelShader, voxelTextureAtlas);
         chunks.put(chunkPos, chunk);
-        voxelChunkGenerator.generate(chunk);
+        return chunk;
+    }
+
+    public VoxelChunk getOrGenChunk(final Vector2ic chunkPos) {
+        final var chunk = getChunkOrNewRaw(chunkPos);
+        if (!chunk.isGenerated()) {
+            voxelChunkGenerator.generate(chunk);
+            for (IVoxelChunkFeatureGenerator featureGenerator : featureQueue) featureGenerator.generate(chunk);
+            chunk.markGenerated();
+        }
         return chunk;
     }
 

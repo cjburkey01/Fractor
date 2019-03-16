@@ -7,7 +7,7 @@ import com.cjburkey.radgame.ecs.Scene;
 import com.cjburkey.radgame.shader.Shader;
 import com.cjburkey.radgame.shader.material.TexturedTransform;
 import com.cjburkey.radgame.texture.TextureAtlas;
-import com.cjburkey.radgame.world.Voxel;
+import com.cjburkey.radgame.voxel.Voxel;
 import com.cjburkey.radgame.world.VoxelState;
 import com.cjburkey.radgame.world.VoxelWorld;
 import java.util.Objects;
@@ -30,6 +30,7 @@ public final class VoxelChunk {
     private final Scene scene;
     final MeshRenderer meshRenderer;
     final GameObject gameObject;
+    private boolean generated;
 
     private final VoxelState[] voxels = new VoxelState[CHUNK_SIZE * CHUNK_SIZE * CHUNK_THICKNESS];
 
@@ -113,6 +114,14 @@ public final class VoxelChunk {
 
     public Vector2ic getPosInWorld() {
         return posInWorld;
+    }
+
+    public boolean isGenerated() {
+        return generated;
+    }
+
+    public void markGenerated() {
+        generated = true;
     }
 
     private static boolean isInvalid(final int x, final int y, final int i) {
