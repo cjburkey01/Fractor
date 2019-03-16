@@ -4,7 +4,6 @@ import com.cjburkey.radgame.RadGame;
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.Time;
 import com.cjburkey.radgame.chunk.VoxelChunk;
-import com.cjburkey.radgame.chunk.VoxelChunkMesher;
 import com.cjburkey.radgame.component.Camera;
 import com.cjburkey.radgame.component.CameraZoom;
 import com.cjburkey.radgame.component.CursorVoxelPicker;
@@ -17,7 +16,6 @@ import com.cjburkey.radgame.glfw.Input;
 import com.cjburkey.radgame.shader.Shader;
 import com.cjburkey.radgame.shader.material.ColoredTransform;
 import com.cjburkey.radgame.util.event.EventHandler;
-import com.cjburkey.radgame.util.io.Log;
 import com.cjburkey.radgame.util.math.Interpolate;
 import com.cjburkey.radgame.util.noise.NoiseState;
 import com.cjburkey.radgame.voxel.Voxels;
@@ -78,18 +76,19 @@ public class GameManager extends Component {
             }
         }));
 
-        worldHandler = new WorldHandler(0L);
-        worldHandler.init(scene, generator, texShader);
+        worldHandler = new WorldHandler(0L, scene, generator, texShader);
+        scene.createObjectWith(worldHandler);
+        worldHandler.chunkLoaders.add(Camera.main.transform());
 
-        final var chunkGenTest = 15;
-        Log.debug("Generating debug chunks: {}x{}", chunkGenTest * 2, chunkGenTest * 2);
-        for (var y = -chunkGenTest; y < chunkGenTest; y++) {
-            for (var x = -chunkGenTest; x < chunkGenTest; x++) {
-                final var chunkA = worldHandler.getVoxelWorld().getOrGenChunk(x, y);
-                VoxelChunkMesher.generateMesh(chunkA);
-            }
-        }
-        Log.debug("Generated debug chunks: {},{} to {},{}", -chunkGenTest, -chunkGenTest, chunkGenTest - 1, chunkGenTest - 1);
+//        final var chunkGenTest = 15;
+//        Log.debug("Generating debug chunks: {}x{}", chunkGenTest * 2, chunkGenTest * 2);
+//        for (var y = -chunkGenTest; y < chunkGenTest; y++) {
+//            for (var x = -chunkGenTest; x < chunkGenTest; x++) {
+//                final var chunkA = worldHandler.getVoxelWorld().getOrGenChunk(x, y);
+//                VoxelChunkMesher.generateMesh(chunkA);
+//            }
+//        }
+//        Log.debug("Generated debug chunks: {},{} to {},{}", -chunkGenTest, -chunkGenTest, chunkGenTest - 1, chunkGenTest - 1);
     }
 
     private void buildCursorVoxelPicker() {

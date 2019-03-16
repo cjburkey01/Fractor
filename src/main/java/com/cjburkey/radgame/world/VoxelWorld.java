@@ -42,6 +42,7 @@ public final class VoxelWorld {
         this.voxelTextureAtlas = Objects.requireNonNull(voxelTextureAtlas);
     }
 
+    // Only creates a new chunk, it won't be generated
     public VoxelChunk getChunkOrNewRaw(final Vector2ic chunkPos) {
         if (chunks.containsKey(chunkPos)) return chunks.get(chunkPos);
         final var chunk = new VoxelChunk(scene, chunkPos, this, voxelShader, voxelTextureAtlas);
@@ -49,6 +50,7 @@ public final class VoxelWorld {
         return chunk;
     }
 
+    // Generates
     public VoxelChunk getOrGenChunk(final Vector2ic chunkPos) {
         final var chunk = getChunkOrNewRaw(chunkPos);
         if (!chunk.isGenerated()) {
@@ -61,6 +63,11 @@ public final class VoxelWorld {
 
     public VoxelChunk getOrGenChunk(final int x, int y) {
         return getOrGenChunk(new Vector2i(x, y));
+    }
+
+    public void unloadChunk(final Vector2ic chunkPos) {
+        final var chunkAt = chunks.remove(chunkPos);
+        if (chunkAt != null) chunkAt.onUnload();
     }
 
     public VoxelChunk getChunk(final Vector2i chunkPos) {
@@ -93,27 +100,45 @@ public final class VoxelWorld {
         return voxelTextureAtlas;
     }
 
+    /**
+     * Converts the given block position within the world into the chunk position of its containing chunk
+     */
     public static Vector2i worldPosToChunk(final int worldX, final int worldY) {
         return new Vector2i(floorDiv(worldX, VoxelChunk.CHUNK_SIZE), floorDiv(worldY, VoxelChunk.CHUNK_SIZE));
     }
 
+    /**
+     * Converts the given block position within the world into the chunk position of its containing chunk
+     */
     public static Vector2i worldPosToChunk(final Vector2ic worldPos) {
         return worldPosToChunk(worldPos.x(), worldPos.y());
     }
 
+    /**
+     * Converts the given block position within the world into the block position withgin its containing chunk
+     */
     private static Vector2i worldPosToInChunk(final Vector2ic chunkPos, final int worldX, final int worldY) {
         Vector2i ret = new Vector2i(chunkPos).mul(VoxelChunk.CHUNK_SIZE);
         return ret.set(worldX - ret.x(), worldY - ret.y());
     }
 
+    /**
+     * Converts the given block position within the world into the block position withgin its containing chunk
+     */
     private static Vector2i worldPosToInChunk(final Vector2ic chunkPos, final Vector2ic worldPos) {
         return worldPosToInChunk(chunkPos, worldPos.x(), worldPos.y());
     }
 
+    /**
+     * Converts the given block position within the world into the block position withgin its containing chunk
+     */
     public static Vector2i worldPosToInChunk(final int worldX, final int worldY) {
         return worldPosToInChunk(worldPosToChunk(worldX, worldY), worldX, worldY);
     }
 
+    /**
+     * Converts the given block position within the world into the block position withgin its containing chunk
+     */
     public static Vector2i worldPosToInChunk(final Vector2ic worldPos) {
         return worldPosToInChunk(worldPos.x(), worldPos.y());
     }
