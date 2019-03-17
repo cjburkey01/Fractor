@@ -54,12 +54,24 @@ public final class VoxelChunk {
         gameObject = scene.createObjectWith(materialRenderer, meshRenderer);
     }
 
-    public void updateNeighborChunks() {
+    public void updateAllNeighborChunks() {
         for (var x = -1; x <= 1; x++) {
             for (var y = -1; y <= 1; y++) {
-                if (x != 0 || y != 0) world.ifPresent(chunkPos.x() + x, chunkPos.y() + y, VoxelChunk::onNeighborUpdate);
+                if (x != 0 || y != 0) updateRelativeNeighbor(x, y);
             }
         }
+    }
+
+    public void updateAdjacentNeighborChunks() {
+        for (var x = -1; x <= 1; x++) {
+            for (var y = -1; y <= 1; y++) {
+                if (x != y) updateRelativeNeighbor(x, y);
+            }
+        }
+    }
+
+    public void updateRelativeNeighbor(int x, int y) {
+        if (x != 0 || y != 0) world.ifPresent(chunkPos.x() + x, chunkPos.y() + y, VoxelChunk::onNeighborUpdate);
     }
 
     private void onNeighborUpdate() {
@@ -87,8 +99,17 @@ public final class VoxelChunk {
         if (newState != null) voxel.onAdd(newState);
 
         if (update) {
-            if (posInChunk.x() == 0 || posInChunk.x() == (CHUNK_SIZE - 1) || posInChunk.y() == 0 || posInChunk.y() == (CHUNK_SIZE - 1)) {
-                updateNeighborChunks();
+            if (posInChunk.x() == 0) {
+                updateRelativeNeighbor(-1, 0);
+            }
+            if (posInChunk.x() == (CHUNK_SIZE - 1)) {
+                updateRelativeNeighbor(1, 0);
+            }
+            if (posInChunk.y() == 0) {
+                updateRelativeNeighbor(0, -1);
+            }
+            if (posInChunk.y() == (CHUNK_SIZE - 1)) {
+                updateRelativeNeighbor(0, 1);
             }
         }
     }
@@ -140,7 +161,10 @@ public final class VoxelChunk {
     }
 
     public void markGenerated() {
-        generated = true;
+        if (!generated) {
+            updateAllNeighborChunks();
+            generated = true;
+        }
     }
 
     private static boolean isInvalid(final int x, final int y, final int i) {

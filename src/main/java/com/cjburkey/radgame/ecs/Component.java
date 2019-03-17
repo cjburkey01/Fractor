@@ -30,10 +30,18 @@ public abstract class Component implements ConcurrentManager.IConcurrentObject {
         return 1;
     }
 
+    @Override
+    public final void invalidate() {
+        setParent(null);
+    }
+
     void setParent(GameObject parent) {
-        if (this.parent == null && parentTransform == null) {
+        if (parent != null && this.parent == null && parentTransform == null) {
             this.parent = Objects.requireNonNull(parent);
             parentTransform = parent.transform;
+        } else if (parent == null) {
+            this.parent = null;
+            parentTransform = null;
         }
     }
 

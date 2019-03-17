@@ -2,9 +2,13 @@ package com.cjburkey.radgame.voxel;
 
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.mesh.Mesh;
+import com.cjburkey.radgame.util.math.Bounding;
 import com.cjburkey.radgame.util.registry.IRegistryItem;
 import com.cjburkey.radgame.world.VoxelState;
 import java.util.Objects;
+import org.joml.AABBf;
+import org.joml.Vector2i;
+import org.joml.Vector2ic;
 
 /**
  * Created by CJ Burkey on 2019/03/06
@@ -26,9 +30,24 @@ public abstract class Voxel implements IRegistryItem {
     public void onRemove(final VoxelState voxelState) {
     }
 
+    public abstract AABBf[] getBoundingBoxes(final VoxelState voxelState);
+
     @Override
     public ResourceLocation getRegistryId() {
         return registryId;
+    }
+
+    protected final AABBf[] getSquareBoundingBox(final int x, final int y, final int width, final int height) {
+        return new AABBf[] {
+                Bounding.fromSize(new Vector2i(x, y), new Vector2i(width, height)),
+        };
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    protected final AABBf[] getSquareBoundingBox(final Vector2ic pos, final Vector2ic size) {
+        return new AABBf[] {
+                Bounding.fromSize(pos, size),
+        };
     }
 
     @Override

@@ -7,10 +7,10 @@ import com.cjburkey.radgame.glfw.Window;
 import com.cjburkey.radgame.util.event.Event;
 import com.cjburkey.radgame.util.io.Log;
 import java.io.Closeable;
+import org.dyn4j.dynamics.World;
 
 import static org.lwjgl.opengl.GL30.*;
 
-@SuppressWarnings("FieldCanBeLocal")
 public class RadGame implements Runnable, Closeable {
 
     public static RadGame INSTANCE = new RadGame();
@@ -19,6 +19,7 @@ public class RadGame implements Runnable, Closeable {
     private Window window;
 
     private final Scene scene = new Scene();
+    public final World physicsWorld = new World();
 
     static {
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> Log.exception(e));
@@ -117,6 +118,7 @@ public class RadGame implements Runnable, Closeable {
 
     private void update() {
         scene.flush();
+        physicsWorld.update(Time.updateDelta());
         scene.foreachComp(Component::onUpdate);
     }
 

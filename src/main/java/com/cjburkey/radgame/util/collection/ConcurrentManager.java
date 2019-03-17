@@ -31,9 +31,17 @@ public final class ConcurrentManager<K, T extends ConcurrentManager.IConcurrentO
             final var queuedObject = toRemove.poll();
             if (queuedObject != null) {
                 if (queuedObject.object == null) {
+                    final var objs = getObjects(queuedObject.key);
+                    objs.forEach(obj -> {
+                        obj.onRemove();
+                        obj.invalidate();
+                    });
+                    objs.clear();
                     objects.remove(queuedObject.key);
                 } else {
-                    queuedObject.object.onRemove();
+                    final var obj = queuedObject.object;
+                    obj.onRemove();
+                    obj.invalidate();
                     getList(queuedObject.key).remove(queuedObject.object);
                 }
             }
@@ -91,6 +99,9 @@ public final class ConcurrentManager<K, T extends ConcurrentManager.IConcurrentO
 
         @Override
         int hashCode();
+
+        default void invalidate() {
+        }
 
     }
 

@@ -3,6 +3,9 @@ package com.cjburkey.radgame.voxel;
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.mesh.Mesh;
 import com.cjburkey.radgame.world.VoxelState;
+import org.joml.AABBf;
+import org.joml.Vector2i;
+import org.joml.Vector2ic;
 
 import static com.cjburkey.radgame.voxel.TexturedSquareVoxel.*;
 
@@ -11,6 +14,8 @@ import static com.cjburkey.radgame.voxel.TexturedSquareVoxel.*;
  */
 @SuppressWarnings("WeakerAccess")
 public class VoxelGrass extends Voxel implements ITexturedVoxel {
+
+    private static final Vector2ic SIZE = new Vector2i(1);
 
     private final ResourceLocation[] textures = new ResourceLocation[0b100];
 
@@ -22,6 +27,11 @@ public class VoxelGrass extends Voxel implements ITexturedVoxel {
                     String.format("radgame:texture/voxel/grass/grass_%2s.png", Integer.toBinaryString(i)).replace(' ', '0'),
                     true);
         }
+    }
+
+    @Override
+    public AABBf[] getBoundingBoxes(VoxelState voxelState) {
+        return getSquareBoundingBox(voxelState.posInWorld(), SIZE);
     }
 
     public void generateMesh(Mesh.MeshBuilder mesh, VoxelState voxelState) {
@@ -36,7 +46,7 @@ public class VoxelGrass extends Voxel implements ITexturedVoxel {
         if (ld != null && ld.getVoxel().equals(this)) bits |= 0b10;
         if (rd != null && rd.getVoxel().equals(this)) bits |= 0b01;
 
-        addUVSquareToMesh(mesh, voxelState.posInChunk(), i, voxelState.world().voxelTextureAtlas().getUv(textures[bits]));
+        addUVSquareToMesh(mesh, voxelState.posInChunk(), voxelState.z(), voxelState.world().voxelTextureAtlas().getUv(textures[bits]));
     }
 
     public ResourceLocation[] getTextureIds() {

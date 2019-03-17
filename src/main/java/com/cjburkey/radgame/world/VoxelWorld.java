@@ -1,5 +1,6 @@
 package com.cjburkey.radgame.world;
 
+import com.cjburkey.radgame.Time;
 import com.cjburkey.radgame.chunk.VoxelChunk;
 import com.cjburkey.radgame.ecs.Scene;
 import com.cjburkey.radgame.shader.Shader;
@@ -63,10 +64,11 @@ public final class VoxelWorld {
     public VoxelChunk getOrGenChunk(final Vector2ic chunkPos) {
         final var chunk = getChunkOrNewRaw(chunkPos);
         if (!chunk.isGenerated()) {
+            double start = Time.getTime();
             voxelChunkGenerator.generate(chunk);
             for (IVoxelChunkFeatureGenerator featureGenerator : featureQueue) featureGenerator.generate(chunk);
             chunk.markGenerated();
-            chunk.updateNeighborChunks();
+            double delta = (Time.getTime() - start);
         }
         return chunk;
     }

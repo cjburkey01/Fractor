@@ -92,7 +92,7 @@ public class GameManager extends Component {
         final var materialRenderer = new MaterialRenderer();
         final var meshRenderer = new MeshRenderer();
         final var object = scene.createObjectWith(materialRenderer, meshRenderer, voxelPicker);
-        object.transform.position.z = 0.6f;
+        object.transform.position.z = 0.5f;
 
         final var material = new ColoredTransform(colorShader);
         materialRenderer.material = material;

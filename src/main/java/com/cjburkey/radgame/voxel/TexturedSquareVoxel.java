@@ -1,17 +1,19 @@
 package com.cjburkey.radgame.voxel;
 
 import com.cjburkey.radgame.ResourceLocation;
-import com.cjburkey.radgame.chunk.VoxelChunk;
 import com.cjburkey.radgame.mesh.Mesh;
-import com.cjburkey.radgame.util.math.Interpolate;
 import com.cjburkey.radgame.world.VoxelState;
+import org.joml.AABBf;
 import org.joml.Rectanglef;
+import org.joml.Vector2i;
 import org.joml.Vector2ic;
 
 /**
  * Created by CJ Burkey on 2019/03/06
  */
 public class TexturedSquareVoxel extends SingleTexturedVoxel {
+
+    private static final Vector2ic SIZE = new Vector2i(1);
 
     private TexturedSquareVoxel(final ResourceLocation id, final ResourceLocation textureId) {
         super(id, textureId);
@@ -24,13 +26,16 @@ public class TexturedSquareVoxel extends SingleTexturedVoxel {
 
     @Override
     public void generateMesh(final Mesh.MeshBuilder mesh, final VoxelState voxelState) {
-        addUVSquareToMesh(mesh, voxelState.posInChunk(), voxelState.depth(), voxelState.world().voxelTextureAtlas().getUv(getPrimaryTextureId()));
+        addUVSquareToMesh(mesh, voxelState.posInChunk(), voxelState.z(), voxelState.world().voxelTextureAtlas().getUv(getPrimaryTextureId()));
     }
 
-    @SuppressWarnings("WeakerAccess")
-    static void addUVSquareToMesh(final Mesh.MeshBuilder mesh, final Vector2ic chunkPos, final int i, final Rectanglef uv, float addZ) {
+    @Override
+    public AABBf[] getBoundingBoxes(VoxelState voxelState) {
+        return getSquareBoundingBox(voxelState.posInWorld(), SIZE);
+    }
+
+    static void addUVSquareToMesh(final Mesh.MeshBuilder mesh, final Vector2ic chunkPos, final float z, final Rectanglef uv) {
         final var startI = (mesh.lastIndex() + 1);
-        final var z = Interpolate.map(i, 0, VoxelChunk.CHUNK_THICKNESS, -0.5f, 0.5f) + addZ;
         mesh.startSubMesh()
                 // 0
                 .vert(chunkPos.x(), chunkPos.y() + 1.0f, z).uv(uv.minX, uv.minY)
@@ -44,10 +49,6 @@ public class TexturedSquareVoxel extends SingleTexturedVoxel {
                 .vert(chunkPos.x() + 1.0f, chunkPos.y() + 1.0f, z).uv(uv.maxX, uv.minY)
 
                 .endSubMesh();
-    }
-
-    static void addUVSquareToMesh(final Mesh.MeshBuilder mesh, final Vector2ic chunkPos, final int i, final Rectanglef uv) {
-        addUVSquareToMesh(mesh, chunkPos, i, uv, 0.0f);
     }
 
 }

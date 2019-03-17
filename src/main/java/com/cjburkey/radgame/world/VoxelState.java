@@ -1,8 +1,13 @@
 package com.cjburkey.radgame.world;
 
 import com.cjburkey.radgame.chunk.VoxelChunk;
+import com.cjburkey.radgame.util.math.Interpolate;
 import com.cjburkey.radgame.voxel.Voxel;
+import com.cjburkey.radgame.voxel.Voxels;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Objects;
+import org.dyn4j.geometry.Vector2;
+import org.joml.AABBf;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
 
@@ -13,6 +18,8 @@ import org.joml.Vector2ic;
 public final class VoxelState {
 
     public static final VoxelState AIR = new VoxelState();
+
+    private static final AABBf[] EMPTY_COLLIDER = new AABBf[0];
 
     private final Voxel voxel;
     private final VoxelChunk chunk;
@@ -39,7 +46,7 @@ public final class VoxelState {
         this.posInChunk = new Vector2i(Objects.requireNonNull(posInChunk));
         posInWorld = chunk.worldPos().add(posInChunk, new Vector2i());
         this.i = i;
-        isAir = false;
+        isAir = voxel.equals(Voxels.AIR);
     }
 
     public Voxel getVoxel() {
@@ -66,8 +73,43 @@ public final class VoxelState {
         return i;
     }
 
+    public float z() {
+        return Interpolate.map(i, 0, VoxelChunk.CHUNK_THICKNESS, -1.0f, 0.0f);
+    }
+
     public boolean isAir() {
         return isAir;
+    }
+
+    public void onAdd() {
+        if (isAir) return;
+        voxel.onAdd(this);
+    }
+
+    public void onRemove() {
+        if (isAir) return;
+        voxel.onRemove(this);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public AABBf[] getBoundingBoxes() {
+        if (isAir) return EMPTY_COLLIDER;
+        return voxel.getBoundingBoxes(this);
+    }
+
+    public final Vector2[] getVertices() {
+        final var out = new ObjectOpenHashSet<Vector2>();
+        try {
+            for (AABBf boundingBox : getBoundingBoxes()) {
+                out.add(new Vector2(boundingBox.minX, boundingBox.minY));
+                out.add(new Vector2(boundingBox.maxX, boundingBox.minY));
+                out.add(new Vector2(boundingBox.maxX, boundingBox.maxY));
+                out.add(new Vector2(boundingBox.minX, boundingBox.maxY));
+            }
+            return out.toArray(Vector2[]::new);
+        } finally {
+            out.clear();
+        }
     }
 
     @Override
