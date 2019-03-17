@@ -80,14 +80,17 @@ public final class VoxelChunk {
         if (update) {
             final var oldState = voxels[index];
             if (oldState != null && !oldState.getVoxel().equals(Voxels.AIR)) oldState.getVoxel().onRemove(oldState);
-            if (posInChunk.x() == 0 || posInChunk.x() == (CHUNK_SIZE - 1) || posInChunk.y() == 0 || posInChunk.y() == (CHUNK_SIZE - 1)) {
-                updateNeighborChunks();
-            }
         }
 
         final var newState = ((voxel == null) ? null : (new VoxelState(voxel, this, world, posInChunk, i)));
         voxels[index] = newState;
         if (newState != null) voxel.onAdd(newState);
+
+        if (update) {
+            if (posInChunk.x() == 0 || posInChunk.x() == (CHUNK_SIZE - 1) || posInChunk.y() == 0 || posInChunk.y() == (CHUNK_SIZE - 1)) {
+                updateNeighborChunks();
+            }
+        }
     }
 
     public void setVoxel(final Vector2ic posInChunk, final int i, final Voxel voxel) {
