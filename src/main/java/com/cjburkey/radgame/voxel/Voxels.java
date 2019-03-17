@@ -4,6 +4,7 @@ import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.game.GameManager;
 import com.cjburkey.radgame.game.VoxelTypeRegisterEvent;
 import com.cjburkey.radgame.mesh.Mesh;
+import com.cjburkey.radgame.world.Voxel;
 import com.cjburkey.radgame.world.VoxelState;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.joml.AABBf;

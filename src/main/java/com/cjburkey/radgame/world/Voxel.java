@@ -1,10 +1,9 @@
-package com.cjburkey.radgame.voxel;
+package com.cjburkey.radgame.world;
 
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.mesh.Mesh;
 import com.cjburkey.radgame.util.math.Bounding;
 import com.cjburkey.radgame.util.registry.IRegistryItem;
-import com.cjburkey.radgame.world.VoxelState;
 import java.util.Objects;
 import org.joml.AABBf;
 import org.joml.Vector2i;
@@ -24,10 +23,12 @@ public abstract class Voxel implements IRegistryItem {
     // A submesh state is created in the mesh builder, so index 0 is the start of this mesh's vertices
     public abstract void generateMesh(final Mesh.MeshBuilder mesh, final VoxelState voxelState);
 
-    public void onAdd(final VoxelState voxelState) {
+    @SuppressWarnings("WeakerAccess")
+    protected void onAdd(final VoxelState voxelState) {
     }
 
-    public void onRemove(final VoxelState voxelState) {
+    @SuppressWarnings("WeakerAccess")
+    protected void onRemove(final VoxelState voxelState) {
     }
 
     public abstract AABBf[] getBoundingBoxes(final VoxelState voxelState);
@@ -43,7 +44,6 @@ public abstract class Voxel implements IRegistryItem {
         };
     }
 
-    @SuppressWarnings("WeakerAccess")
     protected final AABBf[] getSquareBoundingBox(final Vector2ic pos, final Vector2ic size) {
         return new AABBf[] {
                 Bounding.fromSize(pos, size),

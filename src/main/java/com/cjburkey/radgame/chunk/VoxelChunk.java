@@ -7,8 +7,7 @@ import com.cjburkey.radgame.ecs.Scene;
 import com.cjburkey.radgame.shader.Shader;
 import com.cjburkey.radgame.shader.material.TexturedTransform;
 import com.cjburkey.radgame.texture.TextureAtlas;
-import com.cjburkey.radgame.voxel.Voxel;
-import com.cjburkey.radgame.voxel.Voxels;
+import com.cjburkey.radgame.world.Voxel;
 import com.cjburkey.radgame.world.VoxelState;
 import com.cjburkey.radgame.world.VoxelWorld;
 import java.util.Objects;
@@ -91,12 +90,12 @@ public final class VoxelChunk {
         final var index = index(x, y, i);
         if (update) {
             final var oldState = voxels[index];
-            if (oldState != null && !oldState.getVoxel().equals(Voxels.AIR)) oldState.getVoxel().onRemove(oldState);
+            if (oldState != null) oldState.onRemove();
         }
 
         final var newState = ((voxel == null) ? null : (new VoxelState(voxel, this, world, posInChunk, i)));
         voxels[index] = newState;
-        if (newState != null) voxel.onAdd(newState);
+        if (newState != null) newState.onAdd();
 
         if (update) {
             if (posInChunk.x() == 0) {

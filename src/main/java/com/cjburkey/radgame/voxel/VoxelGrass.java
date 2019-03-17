@@ -2,6 +2,7 @@ package com.cjburkey.radgame.voxel;
 
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.mesh.Mesh;
+import com.cjburkey.radgame.world.Voxel;
 import com.cjburkey.radgame.world.VoxelState;
 import org.joml.AABBf;
 import org.joml.Vector2i;

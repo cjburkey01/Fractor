@@ -2,8 +2,8 @@ package com.cjburkey.radgame.world.generate;
 
 import com.cjburkey.radgame.chunk.VoxelChunk;
 import com.cjburkey.radgame.util.noise.NoiseState;
-import com.cjburkey.radgame.voxel.Voxel;
 import com.cjburkey.radgame.voxel.Voxels;
+import com.cjburkey.radgame.world.Voxel;
 
 /**
  * Created by CJ Burkey on 2019/03/08

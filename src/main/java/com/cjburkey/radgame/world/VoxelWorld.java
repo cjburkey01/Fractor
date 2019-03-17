@@ -5,7 +5,6 @@ import com.cjburkey.radgame.chunk.VoxelChunk;
 import com.cjburkey.radgame.ecs.Scene;
 import com.cjburkey.radgame.shader.Shader;
 import com.cjburkey.radgame.texture.TextureAtlas;
-import com.cjburkey.radgame.voxel.Voxel;
 import com.cjburkey.radgame.world.generate.IVoxelChunkFeatureGenerator;
 import com.cjburkey.radgame.world.generate.IVoxelChunkHeightmapGenerator;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;

@@ -1,6 +1,7 @@
 package com.cjburkey.radgame.voxel;
 
 import com.cjburkey.radgame.ResourceLocation;
+import com.cjburkey.radgame.world.Voxel;
 import java.util.Objects;
 
 /**

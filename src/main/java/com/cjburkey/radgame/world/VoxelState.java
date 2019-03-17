@@ -2,7 +2,6 @@ package com.cjburkey.radgame.world;
 
 import com.cjburkey.radgame.chunk.VoxelChunk;
 import com.cjburkey.radgame.util.math.Interpolate;
-import com.cjburkey.radgame.voxel.Voxel;
 import com.cjburkey.radgame.voxel.Voxels;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Objects;
@@ -78,17 +77,15 @@ public final class VoxelState {
     }
 
     public boolean isAir() {
-        return isAir;
+        return (isAir || voxel == null);
     }
 
     public void onAdd() {
-        if (isAir) return;
-        voxel.onAdd(this);
+        if (!isAir) voxel.onAdd(this);
     }
 
     public void onRemove() {
-        if (isAir) return;
-        voxel.onRemove(this);
+        if (!isAir) voxel.onRemove(this);
     }
 
     @SuppressWarnings("WeakerAccess")
