@@ -31,8 +31,8 @@ public final class VoxelChunkHeightmapGenerator implements IVoxelChunkHeightmapG
 
     @Override
     public void generate(final VoxelChunk chunk) {
-        final var h = chunk.getPosInWorld().y();
-        final var noise = new NoiseState(chunk.world.seed, noiseAmplitude, noiseScale, (double) chunk.getPosInWorld().x(), 0.0d);
+        final var h = chunk.worldPos().y();
+        final var noise = new NoiseState(chunk.world.seed, noiseAmplitude, noiseScale, (double) chunk.worldPos().x(), 0.0d);
 
         // The world is all generated on the "midground" layer, which is i=1
         for (var x = 0; x < VoxelChunk.CHUNK_SIZE; x++) {
@@ -42,7 +42,7 @@ public final class VoxelChunkHeightmapGenerator implements IVoxelChunkHeightmapG
             if (localY >= 0) {
                 if (localY >= VoxelChunk.CHUNK_SIZE) localY = (VoxelChunk.CHUNK_SIZE - 1);
                 for (var y = localY; y >= 0; y--) {
-                    chunk.setVoxel(x, y, 1, voxelSubterrain, false);
+                    if (chunk.getVoxelState(x, y, 1) == null) chunk.setVoxel(x, y, 1, voxelSubterrain, false);
                 }
             }
 
@@ -52,13 +52,14 @@ public final class VoxelChunkHeightmapGenerator implements IVoxelChunkHeightmapG
             if (localY >= 0) {
                 if (localY >= VoxelChunk.CHUNK_SIZE) localY = (VoxelChunk.CHUNK_SIZE - 1);
                 for (var y = localY; y > lastStone; y--) {
-                    chunk.setVoxel(x, y, 1, voxelSubTopTerrain, false);
+                    if (chunk.getVoxelState(x, y, 1) == null) chunk.setVoxel(x, y, 1, voxelSubTopTerrain, false);
                 }
             }
 
             // Grass
             localY += 1;
-            if (localY >= 0) chunk.setVoxel(x, localY, 1, voxelTopTerrain, false);
+            if (localY >= 0 && chunk.getVoxelState(x, localY, 1) == null)
+                chunk.setVoxel(x, localY, 1, voxelTopTerrain, false);
         }
     }
 

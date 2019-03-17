@@ -35,6 +35,7 @@ public class Mesh implements Closeable {
     private int triangles;
     private final Object2IntOpenHashMap<String> buffers = new Object2IntOpenHashMap<>();
     private final IntOpenHashSet attribs = new IntOpenHashSet();
+    private boolean destroyed = false;
 
     public Mesh() {
         vao = glGenVertexArrays();
@@ -45,11 +46,15 @@ public class Mesh implements Closeable {
     }
 
     public Mesh setVertices(ByteBuffer data) {
+        if (destroyed) return this;
+        bind();
         buffer("vbo", data, GL_ARRAY_BUFFER, GL_STATIC_DRAW, 0, FLOATS_PER_VERTEX, GL_FLOAT);
         return this;
     }
 
     public Mesh setVertices(float[] data) {
+        if (destroyed) return this;
+        bind();
         try (MemoryStack stack = stackPush()) {
             ByteBuffer buffer = stack.malloc(data.length * Float.BYTES);
             for (float dat : data) buffer.putFloat(dat);
@@ -59,12 +64,16 @@ public class Mesh implements Closeable {
     }
 
     public Mesh setIndices(ByteBuffer data) {
+        if (destroyed) return this;
+        bind();
         triangles = data.limit() / Short.BYTES;
         buffer("ebo", data, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
         return this;
     }
 
     public Mesh setIndices(short[] data) {
+        if (destroyed) return this;
+        bind();
         try (MemoryStack stack = stackPush()) {
             ByteBuffer buffer = stack.malloc(data.length * Short.BYTES);
             for (short dat : data) buffer.putShort(dat);
@@ -113,39 +122,33 @@ public class Mesh implements Closeable {
     }
 
     public void render() {
+        if (destroyed) return;
         bind();
         attribs.forEach((IntConsumer) GL20::glEnableVertexAttribArray);
         glDrawElements(GL_TRIANGLES, triangles, GL_UNSIGNED_SHORT, 0L);
         attribs.forEach((IntConsumer) GL20::glDisableVertexAttribArray);
     }
 
-    private void clear(boolean keepEbo) {
-        for (int buffer : buffers.values()) {
-            if (!keepEbo || buffer != ebo) glDeleteBuffers(buffer);
-        }
-        buffers.clear();
-        if (keepEbo) buffers.put("ebo", ebo);
-        attribs.clear();
-        triangles = 0;
-    }
-
-    public void clear() {
-        clear(true);
-    }
-
     @Override
     public void close() {
+        if (destroyed) return;
+
         if (currentMesh == vao) {
             currentMesh = -1;
             glBindVertexArray(0);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
 
-        clear(false);
+        buffers.values().forEach((IntConsumer) GL20::glDeleteBuffers);
+        buffers.clear();
+        attribs.clear();
+        triangles = 0;
         glDeleteVertexArrays(vao);
+        destroyed = true;
     }
 
     public void bind() {
+        if (destroyed) return;
         if (currentMesh != vao) {
             glBindVertexArray(vao);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
@@ -162,6 +165,7 @@ public class Mesh implements Closeable {
         private final ObjectArrayList<Vector3fc> vertices = new ObjectArrayList<>();
         private final ShortArrayList indices = new ShortArrayList();
         private final ObjectArrayList<Vector2fc> uvs = new ObjectArrayList<>();
+        private final ShortArrayList subStack = new ShortArrayList();
         private final Mesh mesh;
         private short lastIndex = -1;
         private short maxIndex = -1;
@@ -273,17 +277,20 @@ public class Mesh implements Closeable {
         }
 
         // Begins a "submesh" state in which index "0" refers to the index following the previous maximum index.
+        // This now CAN be embedded!
         public MeshBuilder startSubMesh() {
+            subStack.push(subStart);
             subStart = (short) (maxIndex + 1);
             return this;
         }
 
         public MeshBuilder endSubMesh() {
-            subStart = 0;
+            if (!subStack.isEmpty()) subStart = subStack.popShort();
+            else subStart = 0;
             return this;
         }
 
-        public Mesh end(final boolean clearCurrentMesh) {
+        public Mesh end() {
             final var vertices = memAlloc(this.vertices.size() * Float.BYTES * FLOATS_PER_VERTEX);
             final var indices = memAlloc(this.indices.size() * Short.BYTES);
             final var uvs = ((this.uvs.size() > 0) ? (memAlloc(this.uvs.size() * Float.BYTES * 2)) : null);
@@ -314,7 +321,6 @@ public class Mesh implements Closeable {
                     }
                 }
 
-                if (clearCurrentMesh) mesh.clear();
                 mesh.setVertices(vertices);
                 mesh.setIndices(indices);
                 if (uvs != null) {
@@ -327,10 +333,6 @@ public class Mesh implements Closeable {
             }
             reset();
             return mesh;
-        }
-
-        public Mesh end() {
-            return end(true);
         }
 
     }

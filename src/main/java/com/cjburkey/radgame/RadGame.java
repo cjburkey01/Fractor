@@ -83,6 +83,7 @@ public class RadGame implements Runnable, Closeable {
         glCullFace(GL_BACK);
         glEnable(GL_TEXTURE);
         glActiveTexture(GL_TEXTURE0);
+        glEnable(GL_LINE_SMOOTH);
 
         init();
         running = true;

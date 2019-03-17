@@ -6,7 +6,7 @@ package com.cjburkey.radgame.chunk;
 public final class VoxelChunkMesher {
 
     public static void generateMesh(VoxelChunk chunk) {
-        chunk.gameObject.transform.position.set(chunk.getPosInWorld().x(), chunk.getPosInWorld().y(), 0.0f);
+        chunk.gameObject.transform.position.set(chunk.worldPos().x(), chunk.worldPos().y(), 0.0f);
 
         final var meshBuilder = chunk.meshRenderer.mesh.start();
         for (var i = 0; i < VoxelChunk.CHUNK_THICKNESS; i++) {

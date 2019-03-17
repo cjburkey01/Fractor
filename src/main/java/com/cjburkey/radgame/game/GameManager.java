@@ -4,6 +4,7 @@ import com.cjburkey.radgame.RadGame;
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.Time;
 import com.cjburkey.radgame.chunk.VoxelChunk;
+import com.cjburkey.radgame.chunk.VoxelChunkMesher;
 import com.cjburkey.radgame.component.Camera;
 import com.cjburkey.radgame.component.CameraZoom;
 import com.cjburkey.radgame.component.CursorVoxelPicker;
@@ -19,9 +20,12 @@ import com.cjburkey.radgame.util.event.EventHandler;
 import com.cjburkey.radgame.util.math.Interpolate;
 import com.cjburkey.radgame.util.noise.NoiseState;
 import com.cjburkey.radgame.voxel.Voxels;
+import com.cjburkey.radgame.world.VoxelWorld;
 import com.cjburkey.radgame.world.generate.IVoxelChunkHeightmapGenerator;
 import com.cjburkey.radgame.world.generate.VoxelChunkHeightmapGenerator;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import java.io.IOException;
+import java.util.function.DoubleConsumer;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -42,6 +46,8 @@ public class GameManager extends Component {
 
     private double lastTitleUpdateTime = Time.getTime();
     private final Runtime runtime = Runtime.getRuntime();
+    private DoubleArrayList fps = new DoubleArrayList();
+    private double fpsAvg = 0.0d;
 
     @Override
     public void onLoad() {
@@ -61,9 +67,9 @@ public class GameManager extends Component {
     private void initWorld(IVoxelChunkHeightmapGenerator generator) {
         buildCursorVoxelPicker();
 
-        // TODO: EXPERIMENT! THIS IS NOT PRODUCTION-LEVEL CODE HERE!
-        EVENT_BUS.addListener(WorldHandler.EventRegisterFeatureGenerators.class, e -> e.register(chunk -> {
-            final var worldPos = chunk.getPosInWorld();
+        // TODO: THIS IS JUST TESTING! THIS IS NOT PRODUCTION-LEVEL CODE HERE!
+        EVENT_BUS.addListener(WorldHandler.EventRegisterFeatureGenerators.class, e -> e.register(1000, chunk -> {
+            final var worldPos = chunk.worldPos();
             final var noiseState = new NoiseState(chunk.world.seed, 1.0f, 35.0f, worldPos.x(), worldPos.y());
 
             for (var y = 0; y < VoxelChunk.CHUNK_SIZE; y++) {
@@ -79,16 +85,6 @@ public class GameManager extends Component {
         worldHandler = new WorldHandler(0L, scene, generator, texShader);
         scene.createObjectWith(worldHandler);
         worldHandler.chunkLoaders.add(Camera.main.transform());
-
-//        final var chunkGenTest = 15;
-//        Log.debug("Generating debug chunks: {}x{}", chunkGenTest * 2, chunkGenTest * 2);
-//        for (var y = -chunkGenTest; y < chunkGenTest; y++) {
-//            for (var x = -chunkGenTest; x < chunkGenTest; x++) {
-//                final var chunkA = worldHandler.getVoxelWorld().getOrGenChunk(x, y);
-//                VoxelChunkMesher.generateMesh(chunkA);
-//            }
-//        }
-//        Log.debug("Generated debug chunks: {},{} to {},{}", -chunkGenTest, -chunkGenTest, chunkGenTest - 1, chunkGenTest - 1);
     }
 
     private void buildCursorVoxelPicker() {
@@ -105,32 +101,40 @@ public class GameManager extends Component {
         final var thickness = 0.075f;
         meshRenderer.mesh.start()
                 // Top
+                .startSubMesh()
                 .vert(0.0f, 1.0f)
                 .vert(0.0f, 1.0f - thickness)
                 .vert(1.0f, 1.0f - thickness)
                 .verts(0, 2)
                 .vert(1.0f, 1.0f)
+                .endSubMesh()
 
                 // Bottom
+                .startSubMesh()
                 .vert(0.0f, thickness)
                 .vert(0.0f, 0.0f)
                 .vert(1.0f, 0.0f)
-                .verts(4, 6)
+                .verts(0, 2)
                 .vert(1.0f, thickness)
+                .endSubMesh()
 
                 // Left
+                .startSubMesh()
                 .vert(0.0f, 1.0f - thickness)
                 .vert(0.0f, thickness)
                 .vert(thickness, thickness)
-                .verts(8, 10)
+                .verts(0, 2)
                 .vert(thickness, 1.0f - thickness)
+                .endSubMesh()
 
                 // Right
+                .startSubMesh()
                 .vert(1.0f - thickness, 1.0f - thickness)
                 .vert(1.0f - thickness, thickness)
                 .vert(1.0f, thickness)
-                .verts(12, 14)
+                .verts(0, 2)
                 .vert(1.0f, 1.0f - thickness)
+                .endSubMesh()
                 .end();
     }
 
@@ -142,19 +146,47 @@ public class GameManager extends Component {
     @Override
     public void onUpdate() {
         if (Input.key().wasPressed(GLFW_KEY_ESCAPE)) RadGame.INSTANCE.close();
+
+        // DEBUG
+        if (Input.mouse().isDown(GLFW_MOUSE_BUTTON_LEFT)) {
+            worldHandler.world().ifPresent(VoxelWorld.worldPosToChunk(voxelPicker.getBlockPos()), chunk -> {
+                final var in = VoxelWorld.worldPosToInChunk(voxelPicker.getBlockPos());
+                chunk.setVoxel(in, 1, Voxels.STONE, true);
+                VoxelChunkMesher.generateMesh(chunk);
+            });
+        }
+        if (Input.mouse().isDown(GLFW_MOUSE_BUTTON_RIGHT)) {
+            worldHandler.world().ifPresent(VoxelWorld.worldPosToChunk(voxelPicker.getBlockPos()), chunk -> {
+                final var in = VoxelWorld.worldPosToInChunk(voxelPicker.getBlockPos());
+                chunk.setVoxel(in, 1, null, true);
+                VoxelChunkMesher.generateMesh(chunk);
+            });
+        }
+        if (Input.mouse().wasPressed(GLFW_MOUSE_BUTTON_MIDDLE)) {
+            worldHandler.world().ifPresent(VoxelWorld.worldPosToChunk(voxelPicker.getBlockPos()), chunk -> chunk.material.wireframe = !chunk.material.wireframe);
+        }
     }
 
     @Override
     public void onRender() {
         final var now = Time.getTime();
+
+        if (fps.size() >= 30) fps.removeDouble(0);
+        fps.push(Time.renderDeltaf());
+
         if ((now - lastTitleUpdateTime) >= (1.0f / 10.0f)) {
-            lastTitleUpdateTime = now;
+            fpsAvg = 0.0d;
+            fps.forEach((DoubleConsumer) (e -> fpsAvg += e));
+            if (fps.size() > 0) fpsAvg /= fps.size();
+
             RadGame.INSTANCE.window().setTitle(
                     String.format("Fractor 0.0.1 | %.2f FPS | %.2f UPS | %sMB / %sMB",
-                            1.0f / Time.renderDeltaf(),
-                            1.0f / Time.updateDeltaf(),
-                            (runtime.totalMemory() - runtime.freeMemory()) / 1000000,
-                            runtime.totalMemory() / 1000000));
+                            (1.0f / fpsAvg),
+                            (1.0f / Time.updateDeltaf()),
+                            ((runtime.totalMemory() - runtime.freeMemory()) / 1000000L),
+                            (runtime.totalMemory() / 1000000L)));
+
+            lastTitleUpdateTime = now;
         }
     }
 

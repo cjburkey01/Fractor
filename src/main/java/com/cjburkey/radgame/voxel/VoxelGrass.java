@@ -12,12 +12,12 @@ import static com.cjburkey.radgame.voxel.TexturedSquareVoxel.*;
 @SuppressWarnings("WeakerAccess")
 public class VoxelGrass extends Voxel implements ITexturedVoxel {
 
-    private final ResourceLocation[] textures = new ResourceLocation[0b11];
+    private final ResourceLocation[] textures = new ResourceLocation[0b100];
 
     public VoxelGrass() {
         super(ResourceLocation.fromString("radgame:voxel/grass", false));
 
-        for (int i = 0; i < 0b11; i++) {
+        for (int i = 0; i < 0b100; i++) {
             textures[i] = ResourceLocation.fromString(
                     String.format("radgame:texture/voxel/grass/grass_%2s.png", Integer.toBinaryString(i)).replace(' ', '0'),
                     true);
@@ -25,17 +25,18 @@ public class VoxelGrass extends Voxel implements ITexturedVoxel {
     }
 
     public void generateMesh(Mesh.MeshBuilder mesh, VoxelState voxelState) {
-        final var x = voxelState.posInChunk().x();
-        final var y = voxelState.posInChunk().y();
+        final var x = voxelState.posInWorld().x();
+        final var y = voxelState.posInWorld().y();
+        final var i = voxelState.depth();
 
-        final var rd = voxelState.chunk().getVoxelState(x + 1, y - 1, voxelState.depth());
-        final var ld = voxelState.chunk().getVoxelState(x - 1, y - 1, voxelState.depth());
+        final var rd = voxelState.world().getVoxelState(x + 1, y - 1, i);
+        final var ld = voxelState.world().getVoxelState(x - 1, y - 1, i);
 
         var bits = 0x00;
         if (ld != null && ld.getVoxel().equals(this)) bits |= 0b10;
         if (rd != null && rd.getVoxel().equals(this)) bits |= 0b01;
 
-        addUVSquareToMesh(mesh, voxelState.posInChunk(), voxelState.depth(), voxelState.world().voxelTextureAtlas().getUv(textures[bits]));
+        addUVSquareToMesh(mesh, voxelState.posInChunk(), i, voxelState.world().voxelTextureAtlas().getUv(textures[bits]));
     }
 
     public ResourceLocation[] getTextureIds() {

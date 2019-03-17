@@ -8,6 +8,7 @@ import com.cjburkey.radgame.shader.Shader;
 import com.cjburkey.radgame.shader.material.TexturedTransform;
 import com.cjburkey.radgame.texture.TextureAtlas;
 import com.cjburkey.radgame.voxel.Voxel;
+import com.cjburkey.radgame.voxel.Voxels;
 import com.cjburkey.radgame.world.VoxelState;
 import com.cjburkey.radgame.world.VoxelWorld;
 import java.util.Objects;
@@ -31,6 +32,7 @@ public final class VoxelChunk {
     final MeshRenderer meshRenderer;
     final GameObject gameObject;
     private boolean generated;
+    public final TexturedTransform material;
 
     private final VoxelState[] voxels = new VoxelState[CHUNK_SIZE * CHUNK_SIZE * CHUNK_THICKNESS];
 
@@ -45,12 +47,23 @@ public final class VoxelChunk {
         this.scene = Objects.requireNonNull(scene);
 
         final var materialRenderer = new MaterialRenderer();
-        final var mat = new TexturedTransform(shader);
-        mat.texture = atlasMaterial.getTexture();
-        materialRenderer.material = mat;
-
+        material = new TexturedTransform(shader);
+        material.texture = atlasMaterial.getTexture();
+        materialRenderer.material = material;
         meshRenderer = new MeshRenderer();
         gameObject = scene.createObjectWith(materialRenderer, meshRenderer);
+    }
+
+    public void updateNeighborChunks() {
+        for (var x = -1; x <= 1; x++) {
+            for (var y = -1; y <= 1; y++) {
+                if (x != 0 || y != 0) world.ifPresent(chunkPos.x() + x, chunkPos.y() + y, VoxelChunk::onNeighborUpdate);
+            }
+        }
+    }
+
+    private void onNeighborUpdate() {
+        VoxelChunkMesher.generateMesh(this);
     }
 
     public void onUnload() {
@@ -66,7 +79,10 @@ public final class VoxelChunk {
         final var index = index(x, y, i);
         if (update) {
             final var oldState = voxels[index];
-            if (oldState != null) oldState.getVoxel().onRemove(oldState);
+            if (oldState != null && !oldState.getVoxel().equals(Voxels.AIR)) oldState.getVoxel().onRemove(oldState);
+            if (posInChunk.x() == 0 || posInChunk.x() == (CHUNK_SIZE - 1) || posInChunk.y() == 0 || posInChunk.y() == (CHUNK_SIZE - 1)) {
+                updateNeighborChunks();
+            }
         }
 
         final var newState = ((voxel == null) ? null : (new VoxelState(voxel, this, world, posInChunk, i)));
@@ -109,11 +125,11 @@ public final class VoxelChunk {
     }
 
     public Vector2ic getChunkPos() {
-        return chunkPos;
+        return new Vector2i(chunkPos);
     }
 
-    public Vector2ic getPosInWorld() {
-        return posInWorld;
+    public Vector2ic worldPos() {
+        return new Vector2i(posInWorld);
     }
 
     public boolean isGenerated() {
@@ -132,6 +148,7 @@ public final class VoxelChunk {
         return i * CHUNK_SIZE * CHUNK_SIZE + y * CHUNK_SIZE + x;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -140,6 +157,7 @@ public final class VoxelChunk {
                 posInWorld.equals(that.posInWorld);
     }
 
+    @Override
     public int hashCode() {
         return Objects.hash(chunkPos, posInWorld);
     }

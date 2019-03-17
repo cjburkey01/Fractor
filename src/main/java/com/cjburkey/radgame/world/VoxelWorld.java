@@ -9,6 +9,8 @@ import com.cjburkey.radgame.world.generate.IVoxelChunkFeatureGenerator;
 import com.cjburkey.radgame.world.generate.IVoxelChunkHeightmapGenerator;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Objects;
+import java.util.function.Consumer;
+import org.joml.Random;
 import org.joml.Vector2fc;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
@@ -30,6 +32,7 @@ public final class VoxelWorld {
     private final TextureAtlas voxelTextureAtlas;
     private final Object2ObjectOpenHashMap<Vector2ic, VoxelChunk> chunks = new Object2ObjectOpenHashMap<>();
     public final long seed;
+    public final Random random;
 
     public VoxelWorld(final long seed,
                       final Scene scene,
@@ -43,6 +46,9 @@ public final class VoxelWorld {
         System.arraycopy(Objects.requireNonNull(features), 0, featureQueue = new IVoxelChunkFeatureGenerator[features.length], 0, features.length);
         this.voxelShader = Objects.requireNonNull(voxelShader);
         this.voxelTextureAtlas = Objects.requireNonNull(voxelTextureAtlas);
+        this.random = new Random(seed);
+
+        chunks.defaultReturnValue(null);
     }
 
     // Only creates a new chunk, it won't be generated
@@ -60,6 +66,7 @@ public final class VoxelWorld {
             voxelChunkGenerator.generate(chunk);
             for (IVoxelChunkFeatureGenerator featureGenerator : featureQueue) featureGenerator.generate(chunk);
             chunk.markGenerated();
+            chunk.updateNeighborChunks();
         }
         return chunk;
     }
@@ -68,13 +75,27 @@ public final class VoxelWorld {
         return getOrGenChunk(new Vector2i(x, y));
     }
 
+    public void ifPresent(Vector2ic chunk, Consumer<VoxelChunk> ifPresent) {
+        final var chunkAt = getChunk(chunk);
+        if (chunkAt != null) ifPresent.accept(chunkAt);
+    }
+
+    public void ifPresent(int x, int y, Consumer<VoxelChunk> ifPresent) {
+        final var chunkAt = getChunk(x, y);
+        if (chunkAt != null) ifPresent.accept(chunkAt);
+    }
+
     public void unloadChunk(final Vector2ic chunkPos) {
         final var chunkAt = chunks.remove(chunkPos);
         if (chunkAt != null) chunkAt.onUnload();
     }
 
-    public VoxelChunk getChunk(final Vector2i chunkPos) {
-        return chunks.getOrDefault(chunkPos, null);
+    public VoxelChunk getChunk(final Vector2ic chunkPos) {
+        return chunks.get(chunkPos);
+    }
+
+    public VoxelChunk getChunk(int chunkX, int chunkY) {
+        return getChunk(new Vector2i(chunkX, chunkY));
     }
 
     public VoxelState getVoxelState(final int worldX, final int worldY, final int i) {
@@ -89,14 +110,13 @@ public final class VoxelWorld {
         return getVoxelState(worldPos.x(), worldPos.y(), i);
     }
 
-    public void setVoxel(final int worldX, final int worldY, final int i, final Voxel voxel) {
+    public void setVoxel(final int worldX, final int worldY, final int i, final Voxel voxel, boolean update) {
         final var atPos = worldPosToChunk(worldX, worldY);
-        final var at = getChunk(atPos);
-        if (at != null) at.setVoxel(worldPosToInChunk(atPos, worldX, worldY), i, voxel);
+        getChunkOrNewRaw(atPos).setVoxel(worldPosToInChunk(atPos, worldX, worldY), i, voxel, update);
     }
 
-    public void setVoxel(final Vector2ic worldPos, final int i, final Voxel voxel) {
-        setVoxel(worldPos.x(), worldPos.y(), i, voxel);
+    public void setVoxel(final Vector2ic worldPos, final int i, final Voxel voxel, boolean update) {
+        setVoxel(worldPos.x(), worldPos.y(), i, voxel, update);
     }
 
     public TextureAtlas voxelTextureAtlas() {

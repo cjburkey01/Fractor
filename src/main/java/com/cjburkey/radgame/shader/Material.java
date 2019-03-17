@@ -7,6 +7,7 @@ import com.cjburkey.radgame.glfw.Window;
 public abstract class Material {
 
     public final Shader shader;
+    public boolean wireframe;
 
     public Material(Shader shader) {
         this.shader = shader;

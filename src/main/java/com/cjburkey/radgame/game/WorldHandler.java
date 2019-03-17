@@ -21,6 +21,7 @@ import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Collections;
+import java.util.Comparator;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
 
@@ -46,12 +47,16 @@ public class WorldHandler extends Component {
         Voxels.init();
         registerVoxels();
 
-        final var features = new ObjectArrayList<IVoxelChunkFeatureGenerator>();
+        final var features = new ObjectArrayList<Feature>();
         GameManager.EVENT_BUS.invoke(new EventRegisterFeatureGenerators(features));
+        features.sort(Comparator.comparingInt(Feature::weight));
+
         voxelWorld = new VoxelWorld(seed,
                 scene,
                 voxelChunkGenerator,
-                features.toArray(new IVoxelChunkFeatureGenerator[0]),
+                features.stream()
+                        .map(Feature::generator)
+                        .toArray(IVoxelChunkFeatureGenerator[]::new),
                 chunkShader,
                 generateVoxelTextureAtlas());
     }
@@ -80,9 +85,7 @@ public class WorldHandler extends Component {
             chunksToUnLoad.clear();
 
             chunksToLoad.forEach(chunk -> {
-                if (!chunks.containsKey(chunk)) {
-                    VoxelChunkMesher.generateMesh(voxelWorld.getOrGenChunk(chunk));
-                }
+                if (!chunks.containsKey(chunk)) VoxelChunkMesher.generateMesh(voxelWorld.getOrGenChunk(chunk));
                 chunks.put(chunk, loadTimeout);
             });
             chunksToLoad.clear();
@@ -109,24 +112,46 @@ public class WorldHandler extends Component {
         return textureAtlas;
     }
 
-    public VoxelWorld getVoxelWorld() {
+    public VoxelWorld world() {
         return voxelWorld;
     }
 
     public static class EventRegisterFeatureGenerators extends Event {
 
-        private final ObjectArrayList<IVoxelChunkFeatureGenerator> features;
+        private final ObjectArrayList<Feature> features;
 
-        private EventRegisterFeatureGenerators(ObjectArrayList<IVoxelChunkFeatureGenerator> features) {
+        private EventRegisterFeatureGenerators(ObjectArrayList<Feature> features) {
             this.features = features;
         }
 
-        public void register(IVoxelChunkFeatureGenerator feature) {
-            features.add(feature);
+        // Higher weight means an earlier call
+        public void register(int weight, IVoxelChunkFeatureGenerator feature) {
+            features.add(new Feature(weight, feature));
         }
 
-        public void register(IVoxelChunkFeatureGenerator... features) {
-            Collections.addAll(this.features, features);
+        // Higher weight means an earlier call
+        public void register(int weight, IVoxelChunkFeatureGenerator... features) {
+            for (IVoxelChunkFeatureGenerator feature : features) register(weight, feature);
+        }
+
+    }
+
+    public static final class Feature {
+
+        private final int weight;
+        private final IVoxelChunkFeatureGenerator generator;
+
+        private Feature(int weight, IVoxelChunkFeatureGenerator generator) {
+            this.weight = -weight;
+            this.generator = generator;
+        }
+
+        private int weight() {
+            return weight;
+        }
+
+        private IVoxelChunkFeatureGenerator generator() {
+            return generator;
         }
 
     }

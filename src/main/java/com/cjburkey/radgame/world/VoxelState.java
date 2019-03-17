@@ -2,7 +2,6 @@ package com.cjburkey.radgame.world;
 
 import com.cjburkey.radgame.chunk.VoxelChunk;
 import com.cjburkey.radgame.voxel.Voxel;
-import com.cjburkey.radgame.voxel.Voxels;
 import java.util.Objects;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
@@ -24,7 +23,7 @@ public final class VoxelState {
     private final boolean isAir;
 
     private VoxelState() {
-        voxel = Voxels.AIR;
+        voxel = null;
         chunk = null;
         world = null;
         posInChunk = null;
@@ -38,7 +37,7 @@ public final class VoxelState {
         this.chunk = Objects.requireNonNull(chunk);
         this.world = Objects.requireNonNull(world);
         this.posInChunk = new Vector2i(Objects.requireNonNull(posInChunk));
-        posInWorld = chunk.getPosInWorld().add(posInChunk, new Vector2i());
+        posInWorld = chunk.worldPos().add(posInChunk, new Vector2i());
         this.i = i;
         isAir = false;
     }
@@ -57,6 +56,10 @@ public final class VoxelState {
 
     public Vector2ic posInChunk() {
         return posInChunk;
+    }
+
+    public Vector2ic posInWorld() {
+        return posInWorld;
     }
 
     public int depth() {

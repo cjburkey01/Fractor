@@ -27,10 +27,11 @@ public class TexturedSquareVoxel extends SingleTexturedVoxel {
         addUVSquareToMesh(mesh, voxelState.posInChunk(), voxelState.depth(), voxelState.world().voxelTextureAtlas().getUv(getPrimaryTextureId()));
     }
 
-    static void addUVSquareToMesh(final Mesh.MeshBuilder mesh, final Vector2ic chunkPos, final int i, final Rectanglef uv) {
+    @SuppressWarnings("WeakerAccess")
+    static void addUVSquareToMesh(final Mesh.MeshBuilder mesh, final Vector2ic chunkPos, final int i, final Rectanglef uv, float addZ) {
         final var startI = (mesh.lastIndex() + 1);
-        final var z = Interpolate.map(i, 0, VoxelChunk.CHUNK_THICKNESS, -0.5f, 0.5f);
-        mesh
+        final var z = Interpolate.map(i, 0, VoxelChunk.CHUNK_THICKNESS, -0.5f, 0.5f) + addZ;
+        mesh.startSubMesh()
                 // 0
                 .vert(chunkPos.x(), chunkPos.y() + 1.0f, z).uv(uv.minX, uv.minY)
                 // 1
@@ -40,7 +41,13 @@ public class TexturedSquareVoxel extends SingleTexturedVoxel {
                 // 0, 2
                 .verts(startI, startI + 2)
                 // 3
-                .vert(chunkPos.x() + 1.0f, chunkPos.y() + 1.0f, z).uv(uv.maxX, uv.minY);
+                .vert(chunkPos.x() + 1.0f, chunkPos.y() + 1.0f, z).uv(uv.maxX, uv.minY)
+
+                .endSubMesh();
+    }
+
+    static void addUVSquareToMesh(final Mesh.MeshBuilder mesh, final Vector2ic chunkPos, final int i, final Rectanglef uv) {
+        addUVSquareToMesh(mesh, chunkPos, i, uv, 0.0f);
     }
 
 }
