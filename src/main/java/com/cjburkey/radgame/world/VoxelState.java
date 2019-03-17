@@ -47,19 +47,19 @@ public final class VoxelState {
         return voxel;
     }
 
-    public VoxelChunk getChunk() {
+    public VoxelChunk chunk() {
         return chunk;
     }
 
-    public VoxelWorld getWorld() {
+    public VoxelWorld world() {
         return world;
     }
 
-    public Vector2ic getPosInChunk() {
+    public Vector2ic posInChunk() {
         return posInChunk;
     }
 
-    public int getDepth() {
+    public int depth() {
         return i;
     }
 

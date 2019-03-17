@@ -20,7 +20,7 @@ public final class Voxels {
     });
     public static final Voxel STONE = register(new TexturedSquareVoxel("radgame:voxel/stone", "radgame:texture/voxel/stone.png"));
     public static final Voxel DIRT = register(new TexturedSquareVoxel("radgame:voxel/dirt", "radgame:texture/voxel/dirt.png"));
-    public static final Voxel GRASS = register(new TexturedSquareVoxel("radgame:voxel/grass", "radgame:texture/voxel/grass.png"));
+    public static final Voxel GRASS = register(new VoxelGrass());
 
     private static boolean init = false;
 

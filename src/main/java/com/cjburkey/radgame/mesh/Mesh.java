@@ -256,7 +256,7 @@ public class Mesh implements Closeable {
         }
 
         public short lastIndex() {
-            return lastIndex;
+            return (short) (lastIndex - subStart);
         }
 
         public short maxIndex() {

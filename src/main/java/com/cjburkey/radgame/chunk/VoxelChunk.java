@@ -22,7 +22,7 @@ import org.joml.Vector2ic;
 public final class VoxelChunk {
 
     public static final int CHUNK_SIZE = 32;
-    static final int CHUNK_THICKNESS = 3;
+    public static final int CHUNK_THICKNESS = 3;
 
     private final Vector2ic chunkPos;
     private final Vector2ic posInWorld;

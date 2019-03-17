@@ -61,7 +61,7 @@ public class WorldHandler extends Component {
         final var now = Time.getTime();
         if ((now - lastCheck) >= checkFrequency) {
             for (final var chunkLoader : chunkLoaders) {
-                final var chunkLoaderChunkPos = VoxelWorld.worldPosToChunk((int) chunkLoader.position.x, (int) chunkLoader.position.y);
+                final var chunkLoaderChunkPos = VoxelWorld.worldPosToChunk(chunkLoader.position);
                 for (var x = -loadRadius; x < loadRadius; x++) {
                     for (var y = -loadRadius; y < loadRadius; y++) {
                         chunksToLoad.add(new Vector2i(x, y).add(chunkLoaderChunkPos));

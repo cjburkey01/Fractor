@@ -1,8 +1,12 @@
 package com.cjburkey.radgame.voxel;
 
 import com.cjburkey.radgame.ResourceLocation;
+import com.cjburkey.radgame.chunk.VoxelChunk;
 import com.cjburkey.radgame.mesh.Mesh;
+import com.cjburkey.radgame.util.math.Interpolate;
 import com.cjburkey.radgame.world.VoxelState;
+import org.joml.Rectanglef;
+import org.joml.Vector2ic;
 
 /**
  * Created by CJ Burkey on 2019/03/06
@@ -20,24 +24,23 @@ public class TexturedSquareVoxel extends SingleTexturedVoxel {
 
     @Override
     public void generateMesh(final Mesh.MeshBuilder mesh, final VoxelState voxelState) {
-        final var cx = voxelState.getPosInChunk().x();
-        final var cy = voxelState.getPosInChunk().y();
-        final var uv = voxelState.getWorld().getVoxelTextureAtlas().getUv(getPrimaryTextureId());
+        addUVSquareToMesh(mesh, voxelState.posInChunk(), voxelState.depth(), voxelState.world().voxelTextureAtlas().getUv(getPrimaryTextureId()));
+    }
 
-        // TODO: Z
-//        final var z = Interpolate.map(voxelState.getDepth(), );
-
+    static void addUVSquareToMesh(final Mesh.MeshBuilder mesh, final Vector2ic chunkPos, final int i, final Rectanglef uv) {
+        final var startI = (mesh.lastIndex() + 1);
+        final var z = Interpolate.map(i, 0, VoxelChunk.CHUNK_THICKNESS, -0.5f, 0.5f);
         mesh
                 // 0
-                .vert(cx, cy + 1.0f).uv(uv.minX, uv.minY)
+                .vert(chunkPos.x(), chunkPos.y() + 1.0f, z).uv(uv.minX, uv.minY)
                 // 1
-                .vert(cx, cy).uv(uv.minX, uv.maxY)
+                .vert(chunkPos.x(), chunkPos.y(), z).uv(uv.minX, uv.maxY)
                 // 2
-                .vert(cx + 1.0f, cy).uv(uv.maxX, uv.maxY)
+                .vert(chunkPos.x() + 1.0f, chunkPos.y(), z).uv(uv.maxX, uv.maxY)
                 // 0, 2
-                .verts(0, 2)
+                .verts(startI, startI + 2)
                 // 3
-                .vert(cx + 1.0f, cy + 1.0f).uv(uv.maxX, uv.minY);
+                .vert(chunkPos.x() + 1.0f, chunkPos.y() + 1.0f, z).uv(uv.maxX, uv.minY);
     }
 
 }

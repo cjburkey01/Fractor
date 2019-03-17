@@ -9,8 +9,11 @@ import com.cjburkey.radgame.world.generate.IVoxelChunkFeatureGenerator;
 import com.cjburkey.radgame.world.generate.IVoxelChunkHeightmapGenerator;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Objects;
+import org.joml.Vector2fc;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
+import org.joml.Vector3fc;
+import org.joml.Vector3ic;
 
 import static java.lang.Math.*;
 
@@ -96,7 +99,7 @@ public final class VoxelWorld {
         setVoxel(worldPos.x(), worldPos.y(), i, voxel);
     }
 
-    public TextureAtlas getVoxelTextureAtlas() {
+    public TextureAtlas voxelTextureAtlas() {
         return voxelTextureAtlas;
     }
 
@@ -112,6 +115,27 @@ public final class VoxelWorld {
      */
     public static Vector2i worldPosToChunk(final Vector2ic worldPos) {
         return worldPosToChunk(worldPos.x(), worldPos.y());
+    }
+
+    /**
+     * Converts the given block position within the world into the chunk position of its containing chunk
+     */
+    public static Vector2i worldPosToChunk(final Vector3ic worldPos) {
+        return worldPosToChunk(worldPos.x(), worldPos.y());
+    }
+
+    /**
+     * Converts the given block position within the world into the chunk position of its containing chunk
+     */
+    public static Vector2i worldPosToChunk(final Vector2fc worldPos) {
+        return worldPosToChunk((int) worldPos.x(), (int) worldPos.y());
+    }
+
+    /**
+     * Converts the given block position within the world into the chunk position of its containing chunk
+     */
+    public static Vector2i worldPosToChunk(final Vector3fc worldPos) {
+        return worldPosToChunk((int) worldPos.x(), (int) worldPos.y());
     }
 
     /**
