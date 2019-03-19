@@ -4,6 +4,7 @@ import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.game.GameManager;
 import com.cjburkey.radgame.game.VoxelTypeRegisterEvent;
 import com.cjburkey.radgame.mesh.Mesh;
+import com.cjburkey.radgame.texture.TextureAtlas;
 import com.cjburkey.radgame.world.Voxel;
 import com.cjburkey.radgame.world.VoxelState;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -21,10 +22,12 @@ public final class Voxels {
     public static final Voxel AIR = register(new Voxel(ResourceLocation.fromString("radgame:voxel/air", false)) {
         private final AABBf[] BOUNDING = new AABBf[0];
 
-        public void generateMesh(Mesh.MeshBuilder mesh, VoxelState voxelState) {
+        @Override
+        public void generateMesh(final Mesh.MeshBuilder mesh, final TextureAtlas atlas, final VoxelState voxelState) {
         }
 
-        public AABBf[] getBoundingBoxes(VoxelState voxelState) {
+        @Override
+        public AABBf[] getBoundingBoxes(final VoxelState voxelState) {
             return BOUNDING;
         }
     });

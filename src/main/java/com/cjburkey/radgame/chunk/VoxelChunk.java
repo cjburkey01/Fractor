@@ -1,12 +1,6 @@
 package com.cjburkey.radgame.chunk;
 
 import com.cjburkey.radgame.component.render.MaterialRenderer;
-import com.cjburkey.radgame.component.render.MeshRenderer;
-import com.cjburkey.radgame.ecs.GameObject;
-import com.cjburkey.radgame.ecs.Scene;
-import com.cjburkey.radgame.shader.Shader;
-import com.cjburkey.radgame.shader.material.TexturedTransform;
-import com.cjburkey.radgame.texture.TextureAtlas;
 import com.cjburkey.radgame.world.Voxel;
 import com.cjburkey.radgame.world.VoxelState;
 import com.cjburkey.radgame.world.VoxelWorld;
@@ -27,30 +21,17 @@ public final class VoxelChunk {
     private final Vector2ic chunkPos;
     private final Vector2ic posInWorld;
     public final VoxelWorld world;
-    private final Scene scene;
-    final MeshRenderer meshRenderer;
-    final GameObject gameObject;
     private boolean generated;
-    public final TexturedTransform material;
 
     private final VoxelState[] voxels = new VoxelState[CHUNK_SIZE * CHUNK_SIZE * CHUNK_THICKNESS];
 
-    public VoxelChunk(final Scene scene,
-                      final Vector2ic chunkPos,
-                      final VoxelWorld world,
-                      final Shader shader,
-                      final TextureAtlas atlasMaterial) {
+    public VoxelChunk(final Vector2ic chunkPos,
+                      final VoxelWorld world) {
         this.chunkPos = new Vector2i(Objects.requireNonNull(chunkPos));
         this.posInWorld = chunkPos.mul(CHUNK_SIZE, new Vector2i());
         this.world = Objects.requireNonNull(world);
-        this.scene = Objects.requireNonNull(scene);
 
         final var materialRenderer = new MaterialRenderer();
-        material = new TexturedTransform(shader);
-        material.texture = atlasMaterial.getTexture();
-        materialRenderer.material = material;
-        meshRenderer = new MeshRenderer();
-        gameObject = scene.createObjectWith(materialRenderer, meshRenderer);
     }
 
     public void updateAllNeighborChunks() {
@@ -70,15 +51,11 @@ public final class VoxelChunk {
     }
 
     public void updateRelativeNeighbor(int x, int y) {
-        if (x != 0 || y != 0) world.ifPresent(chunkPos.x() + x, chunkPos.y() + y, VoxelChunk::onNeighborUpdate);
+        if (x != 0 || y != 0) world.ifPresent(chunkPos.x() + x, chunkPos.y() + y, chunk -> chunk.onChunkUpdate(this));
     }
 
-    private void onNeighborUpdate() {
-        VoxelChunkMesher.generateMesh(this);
-    }
-
-    public void onUnload() {
-        scene.destroy(gameObject);
+    public void onChunkUpdate(VoxelChunk updater) {
+        world.eventHandler.invoke(new EventChunkUpdate(updater, this));
     }
 
     public void setVoxel(final Vector2ic posInChunk, final int i, final Voxel voxel, boolean update) {
@@ -98,6 +75,8 @@ public final class VoxelChunk {
         if (newState != null) newState.onAdd();
 
         if (update) {
+            onChunkUpdate(this);
+
             if (posInChunk.x() == 0) {
                 updateRelativeNeighbor(-1, 0);
             }
@@ -161,6 +140,7 @@ public final class VoxelChunk {
 
     public void markGenerated() {
         if (!generated) {
+            world.eventHandler.invoke(new VoxelChunk.EventChunkUpdate(this));
             updateAllNeighborChunks();
             generated = true;
         }
@@ -186,6 +166,22 @@ public final class VoxelChunk {
     @Override
     public int hashCode() {
         return Objects.hash(chunkPos, posInWorld);
+    }
+
+    public static class EventChunkUpdate extends VoxelWorld.ChunkEvent {
+
+        public final VoxelChunk updater;
+
+        private EventChunkUpdate(VoxelChunk updater, VoxelChunk chunk) {
+            super(chunk);
+
+            this.updater = Objects.requireNonNull(updater);
+        }
+
+        private EventChunkUpdate(VoxelChunk chunk) {
+            this(chunk, chunk);
+        }
+
     }
 
 }

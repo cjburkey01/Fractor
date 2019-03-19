@@ -31,7 +31,7 @@ public class Log {
     }
 
     public static void exception(Throwable exception) {
-        error("A fatal exception occurred");
+        error("An exception occurred");
         Throwable current = exception;
         do {
             stackTrace(current);

@@ -9,11 +9,11 @@ public abstract class Event {
     private boolean cancelled = false;
     protected boolean cancellable = false;
 
-    public boolean isCancelled() {
-        return cancellable && cancelled;
+    public final boolean isCancelled() {
+        return (cancellable && cancelled);
     }
 
-    public void cancel() {
+    public final void cancel() {
         if (cancellable) cancelled = true;
     }
 

@@ -2,6 +2,7 @@ package com.cjburkey.radgame.world;
 
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.mesh.Mesh;
+import com.cjburkey.radgame.texture.TextureAtlas;
 import com.cjburkey.radgame.util.math.Bounding;
 import com.cjburkey.radgame.util.registry.IRegistryItem;
 import java.util.Objects;
@@ -21,7 +22,7 @@ public abstract class Voxel implements IRegistryItem {
     }
 
     // A submesh state is created in the mesh builder, so index 0 is the start of this mesh's vertices
-    public abstract void generateMesh(final Mesh.MeshBuilder mesh, final VoxelState voxelState);
+    public abstract void generateMesh(final Mesh.MeshBuilder mesh, final TextureAtlas atlas, final VoxelState voxelState);
 
     @SuppressWarnings("WeakerAccess")
     protected void onAdd(final VoxelState voxelState) {

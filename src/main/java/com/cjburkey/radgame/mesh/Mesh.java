@@ -160,7 +160,7 @@ public class Mesh implements Closeable {
         return new MeshBuilder(this);
     }
 
-    public static final class MeshBuilder {
+    public static final class MeshBuilder implements AutoCloseable {
 
         private final ObjectArrayList<Vector3fc> vertices = new ObjectArrayList<>();
         private final ShortArrayList indices = new ShortArrayList();
@@ -333,6 +333,11 @@ public class Mesh implements Closeable {
             }
             reset();
             return mesh;
+        }
+
+        @Override
+        public void close() {
+            end();
         }
 
     }

@@ -4,7 +4,6 @@ import com.cjburkey.radgame.RadGame;
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.Time;
 import com.cjburkey.radgame.chunk.VoxelChunk;
-import com.cjburkey.radgame.chunk.VoxelChunkMesher;
 import com.cjburkey.radgame.component.Camera;
 import com.cjburkey.radgame.component.CameraZoom;
 import com.cjburkey.radgame.component.CursorVoxelPicker;
@@ -152,18 +151,17 @@ public class GameManager extends Component {
             worldHandler.world().ifPresent(VoxelWorld.worldPosToChunk(voxelPicker.getBlockPos()), chunk -> {
                 final var in = VoxelWorld.worldPosToInChunk(voxelPicker.getBlockPos());
                 chunk.setVoxel(in, 1, Voxels.STONE, true);
-                VoxelChunkMesher.generateMesh(chunk);
             });
         }
         if (Input.mouse().isDown(GLFW_MOUSE_BUTTON_RIGHT)) {
             worldHandler.world().ifPresent(VoxelWorld.worldPosToChunk(voxelPicker.getBlockPos()), chunk -> {
                 final var in = VoxelWorld.worldPosToInChunk(voxelPicker.getBlockPos());
                 chunk.setVoxel(in, 1, null, true);
-                VoxelChunkMesher.generateMesh(chunk);
             });
         }
         if (Input.mouse().wasPressed(GLFW_MOUSE_BUTTON_MIDDLE)) {
-            worldHandler.world().ifPresent(VoxelWorld.worldPosToChunk(voxelPicker.getBlockPos()), chunk -> chunk.material.wireframe = !chunk.material.wireframe);
+            final var chunk = worldHandler.getChunk(VoxelWorld.worldPosToChunk(voxelPicker.getBlockPos()));
+            chunk.material().wireframe = !chunk.material().wireframe;
         }
     }
 

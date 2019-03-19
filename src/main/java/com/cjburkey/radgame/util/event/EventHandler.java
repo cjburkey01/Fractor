@@ -1,5 +1,6 @@
 package com.cjburkey.radgame.util.event;
 
+import com.cjburkey.radgame.util.io.Log;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -35,10 +36,17 @@ public final class EventHandler {
 
     @SuppressWarnings("unchecked")
     public <T extends Event> void invoke(T event) {
-        final var eventHandler = getEventHandler(event.getClass());
-        for (IEventCallback<?> listener : eventHandler.values()) {
-            ((IEventCallback<T>) listener).accept(event);
-            if (event.isCancelled()) return;
+        final var clazz = event.getClass();
+        final var eventHandler = getEventHandler(clazz);
+        try {
+            for (IEventCallback<?> listener : eventHandler.values()) {
+                ((IEventCallback<T>) listener).accept(event);
+                if (event.isCancelled()) return;
+            }
+        } catch (Exception e) {
+            Log.error("Unhandled exception while invoking event: \"{}\"", clazz.getSimpleName());
+            Log.error("    Full name: \"{}\"", clazz.getName());
+            Log.exception(e);
         }
     }
 

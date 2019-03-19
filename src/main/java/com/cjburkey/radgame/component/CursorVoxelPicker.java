@@ -17,10 +17,12 @@ public class CursorVoxelPicker extends Component {
     private Window window;
     private final Vector2i blockPos = new Vector2i();
 
+    @Override
     public void onLoad() {
         window = RadGame.INSTANCE.window();
     }
 
+    @Override
     public void onUpdate() {
         final var norm = screenToNormalized(window.getWidth(), window.getHeight(), Input.mousePosf());
         final var trans = normalizedToOrthoWorld(norm,

@@ -2,11 +2,17 @@ package com.cjburkey.radgame.game;
 
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.Time;
+import com.cjburkey.radgame.chunk.VoxelChunk;
 import com.cjburkey.radgame.chunk.VoxelChunkMesher;
 import com.cjburkey.radgame.component.Transform;
+import com.cjburkey.radgame.component.render.MaterialRenderer;
+import com.cjburkey.radgame.component.render.MeshRenderer;
 import com.cjburkey.radgame.ecs.Component;
+import com.cjburkey.radgame.ecs.GameObject;
 import com.cjburkey.radgame.ecs.Scene;
+import com.cjburkey.radgame.shader.Material;
 import com.cjburkey.radgame.shader.Shader;
+import com.cjburkey.radgame.shader.material.TexturedTransform;
 import com.cjburkey.radgame.texture.TextureAtlas;
 import com.cjburkey.radgame.util.event.Event;
 import com.cjburkey.radgame.util.io.Log;
@@ -17,11 +23,12 @@ import com.cjburkey.radgame.world.Voxel;
 import com.cjburkey.radgame.world.VoxelWorld;
 import com.cjburkey.radgame.world.generate.IVoxelChunkFeatureGenerator;
 import com.cjburkey.radgame.world.generate.IVoxelChunkHeightmapGenerator;
-import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Objects;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
 
@@ -39,59 +46,38 @@ public class WorldHandler extends Component {
     public double checkFrequency = 0.1f;
     private double lastCheck = (Time.getTime() - checkFrequency);
     public final ObjectOpenHashSet<Transform> chunkLoaders = new ObjectOpenHashSet<>();
-    private final Object2FloatOpenHashMap<Vector2ic> chunks = new Object2FloatOpenHashMap<>();
     private final ObjectOpenHashSet<Vector2ic> chunksToLoad = new ObjectOpenHashSet<>();
     private final ObjectOpenHashSet<Vector2ic> chunksToUnLoad = new ObjectOpenHashSet<>();
+    private final Object2ObjectOpenHashMap<Vector2ic, LoadedChunk> loadedChunks = new Object2ObjectOpenHashMap<>();
+    private final Scene scene;
+    private final Shader chunkShader;
+    private final TextureAtlas textureAtlas;
 
-    public WorldHandler(long seed, Scene scene, IVoxelChunkHeightmapGenerator voxelChunkGenerator, Shader chunkShader) {
+    public WorldHandler(final long seed,
+                        final Scene scene,
+                        final IVoxelChunkHeightmapGenerator voxelChunkGenerator,
+                        final Shader chunkShader) {
         Voxels.init();
         registerVoxels();
 
-        final var features = new ObjectArrayList<Feature>();
-        GameManager.EVENT_BUS.invoke(new EventRegisterFeatureGenerators(features));
-        features.sort(Comparator.comparingInt(Feature::weight));
+        this.scene = Objects.requireNonNull(scene);
+        this.chunkShader = Objects.requireNonNull(chunkShader);
 
-        voxelWorld = new VoxelWorld(seed,
-                scene,
+        final var features = new ObjectArrayList<GenerationFeature>();
+        GameManager.EVENT_BUS.invoke(new EventRegisterFeatureGenerators(features));
+        features.sort(Comparator.comparingInt(GenerationFeature::weight));
+
+        voxelWorld = new VoxelWorld(GameManager.EVENT_BUS,
+                seed,
                 voxelChunkGenerator,
                 features.stream()
-                        .map(Feature::generator)
-                        .toArray(IVoxelChunkFeatureGenerator[]::new),
-                chunkShader,
-                generateVoxelTextureAtlas());
-    }
+                        .map(GenerationFeature::generator)
+                        .toArray(IVoxelChunkFeatureGenerator[]::new));
 
-    @Override
-    public void onUpdate() {
-        final var now = Time.getTime();
-        if ((now - lastCheck) >= checkFrequency) {
-            for (final var chunkLoader : chunkLoaders) {
-                final var chunkLoaderChunkPos = VoxelWorld.worldPosToChunk(chunkLoader.position);
-                for (var x = -loadRadius; x < loadRadius; x++) {
-                    for (var y = -loadRadius; y < loadRadius; y++) {
-                        chunksToLoad.add(new Vector2i(x, y).add(chunkLoaderChunkPos));
-                    }
-                }
-            }
-            chunks.forEach((chunk, time) -> {
-                if (time <= 0.0f && !chunksToLoad.contains(chunk)) chunksToUnLoad.add(chunk);
-                else chunks.put(chunk, time - (float) checkFrequency);
-            });
+        textureAtlas = generateVoxelTextureAtlas();
 
-            chunksToUnLoad.forEach(chunk -> {
-                chunks.removeFloat(chunk);
-                voxelWorld.unloadChunk(chunk);
-            });
-            chunksToUnLoad.clear();
-
-            chunksToLoad.forEach(chunk -> {
-                if (!chunks.containsKey(chunk)) VoxelChunkMesher.generateMesh(voxelWorld.getOrGenChunk(chunk));
-                chunks.put(chunk, loadTimeout);
-            });
-            chunksToLoad.clear();
-
-            lastCheck = now;
-        }
+        voxelWorld.eventHandler.addListener(VoxelChunk.EventChunkUpdate.class, e -> loadedChunks.get(e.chunk.getChunkPos()).generateMesh());
+        voxelWorld.eventHandler.addListener(VoxelWorld.EventChunkUnload.class, e -> loadedChunks.get(e.chunk.getChunkPos()).onUnload());
     }
 
     private void registerVoxels() {
@@ -112,21 +98,99 @@ public class WorldHandler extends Component {
         return textureAtlas;
     }
 
+    @Override
+    public void onUpdate() {
+        final var now = Time.getTime();
+        if ((now - lastCheck) >= checkFrequency) {
+            for (final var chunkLoader : chunkLoaders) {
+                final var chunkLoaderChunkPos = VoxelWorld.worldPosToChunk(chunkLoader.position);
+                for (var x = -loadRadius; x < loadRadius; x++) {
+                    for (var y = -loadRadius; y < loadRadius; y++) {
+                        chunksToLoad.add(new Vector2i(x, y).add(chunkLoaderChunkPos));
+                    }
+                }
+            }
+            loadedChunks.forEach((pos, chunk) -> {
+                if (chunk.time <= 0.0f && !chunksToLoad.contains(pos)) chunksToUnLoad.add(pos);
+                else chunk.time -= checkFrequency;
+            });
+
+            chunksToUnLoad.forEach(voxelWorld::unloadChunk);
+            chunksToUnLoad.clear();
+
+            chunksToLoad.forEach(chunk -> voxelWorld.ifNotPresent(chunk, () -> {
+                final var at = loadedChunks.get(chunk);
+                final var chunkAt = voxelWorld.getChunkOrLoadEmpty(chunk);
+                if (at == null) loadedChunks.put(chunk, new LoadedChunk(chunkAt));
+                voxelWorld.generateChunk(chunkAt);
+            }));
+            chunksToLoad.clear();
+
+            lastCheck = now;
+        }
+    }
+
     public VoxelWorld world() {
         return voxelWorld;
     }
 
+    public LoadedChunk getChunk(Vector2ic chunkPos) {
+        return loadedChunks.getOrDefault(chunkPos, null);
+    }
+
+    public LoadedChunk getChunk(int x, int y) {
+        return getChunk(new Vector2i(x, y));
+    }
+
+    public class LoadedChunk {
+
+        private float time = loadTimeout;
+        private final Vector2ic chunk;
+        private final VoxelChunk chunkAt;
+        private final TexturedTransform material;
+        private final MeshRenderer meshRenderer;
+        private final GameObject gameObject;
+
+        private LoadedChunk(final VoxelChunk chunk) {
+            this.chunk = Objects.requireNonNull(chunk).getChunkPos();
+            chunkAt = chunk;
+            material = new TexturedTransform(chunkShader);
+            meshRenderer = new MeshRenderer();
+
+            final var materialRenderer = new MaterialRenderer();
+            materialRenderer.material = material;
+            material.texture = textureAtlas.getTexture();
+            gameObject = scene.createObjectWith(materialRenderer, meshRenderer);
+        }
+
+        private void generateMesh() {
+            try (final var builder = meshRenderer.mesh.start()) {
+                VoxelChunkMesher.generateMesh(gameObject.transform, builder, textureAtlas, chunkAt);
+            }
+        }
+
+        private void onUnload() {
+            loadedChunks.remove(chunk);
+            scene.destroy(gameObject);
+        }
+
+        public Material material() {
+            return material;
+        }
+
+    }
+
     public static class EventRegisterFeatureGenerators extends Event {
 
-        private final ObjectArrayList<Feature> features;
+        private final ObjectArrayList<GenerationFeature> features;
 
-        private EventRegisterFeatureGenerators(ObjectArrayList<Feature> features) {
+        private EventRegisterFeatureGenerators(ObjectArrayList<GenerationFeature> features) {
             this.features = features;
         }
 
         // Higher weight means an earlier call
         public void register(int weight, IVoxelChunkFeatureGenerator feature) {
-            features.add(new Feature(weight, feature));
+            features.add(new GenerationFeature(weight, feature));
         }
 
         // Higher weight means an earlier call
@@ -136,12 +200,12 @@ public class WorldHandler extends Component {
 
     }
 
-    public static final class Feature {
+    public static final class GenerationFeature {
 
         private final int weight;
         private final IVoxelChunkFeatureGenerator generator;
 
-        private Feature(int weight, IVoxelChunkFeatureGenerator generator) {
+        private GenerationFeature(int weight, IVoxelChunkFeatureGenerator generator) {
             this.weight = -weight;
             this.generator = generator;
         }

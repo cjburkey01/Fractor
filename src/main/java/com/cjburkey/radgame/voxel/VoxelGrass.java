@@ -2,6 +2,7 @@ package com.cjburkey.radgame.voxel;
 
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.mesh.Mesh;
+import com.cjburkey.radgame.texture.TextureAtlas;
 import com.cjburkey.radgame.world.Voxel;
 import com.cjburkey.radgame.world.VoxelState;
 import org.joml.AABBf;
@@ -35,7 +36,8 @@ public class VoxelGrass extends Voxel implements ITexturedVoxel {
         return getSquareBoundingBox(voxelState.posInWorld(), SIZE);
     }
 
-    public void generateMesh(Mesh.MeshBuilder mesh, VoxelState voxelState) {
+    @Override
+    public void generateMesh(Mesh.MeshBuilder mesh, final TextureAtlas atlas, VoxelState voxelState) {
         final var x = voxelState.posInWorld().x();
         final var y = voxelState.posInWorld().y();
         final var i = voxelState.depth();
@@ -47,13 +49,15 @@ public class VoxelGrass extends Voxel implements ITexturedVoxel {
         if (ld != null && ld.getVoxel().equals(this)) bits |= 0b10;
         if (rd != null && rd.getVoxel().equals(this)) bits |= 0b01;
 
-        addUVSquareToMesh(mesh, voxelState.posInChunk(), voxelState.z(), voxelState.world().voxelTextureAtlas().getUv(textures[bits]));
+        addUVSquareToMesh(mesh, voxelState.posInChunk(), voxelState.z(), atlas.getUv(textures[bits]));
     }
 
+    @Override
     public ResourceLocation[] getTextureIds() {
         return textures;
     }
 
+    @Override
     public ResourceLocation getPrimaryTextureId() {
         return textures[0b00];
     }

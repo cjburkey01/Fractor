@@ -1,10 +1,8 @@
 package com.cjburkey.radgame.world;
 
-import com.cjburkey.radgame.Time;
 import com.cjburkey.radgame.chunk.VoxelChunk;
-import com.cjburkey.radgame.ecs.Scene;
-import com.cjburkey.radgame.shader.Shader;
-import com.cjburkey.radgame.texture.TextureAtlas;
+import com.cjburkey.radgame.util.event.Event;
+import com.cjburkey.radgame.util.event.EventHandler;
 import com.cjburkey.radgame.world.generate.IVoxelChunkFeatureGenerator;
 import com.cjburkey.radgame.world.generate.IVoxelChunkHeightmapGenerator;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -25,55 +23,55 @@ import static java.lang.Math.*;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class VoxelWorld {
 
-    private final Scene scene;
+    public final EventHandler eventHandler;
     private final IVoxelChunkHeightmapGenerator voxelChunkGenerator;
     private final IVoxelChunkFeatureGenerator[] featureQueue;
-    private final Shader voxelShader;
-    private final TextureAtlas voxelTextureAtlas;
     private final Object2ObjectOpenHashMap<Vector2ic, VoxelChunk> chunks = new Object2ObjectOpenHashMap<>();
     public final long seed;
     public final Random random;
 
-    public VoxelWorld(final long seed,
-                      final Scene scene,
+    public VoxelWorld(final EventHandler eventHandler,
+                      final long seed,
                       final IVoxelChunkHeightmapGenerator voxelChunkGenerator,
-                      final IVoxelChunkFeatureGenerator[] features,
-                      final Shader voxelShader,
-                      final TextureAtlas voxelTextureAtlas) {
+                      final IVoxelChunkFeatureGenerator[] features) {
+        this.eventHandler = Objects.requireNonNull(eventHandler);
         this.seed = seed;
-        this.scene = Objects.requireNonNull(scene);
         this.voxelChunkGenerator = Objects.requireNonNull(voxelChunkGenerator);
         System.arraycopy(Objects.requireNonNull(features), 0, featureQueue = new IVoxelChunkFeatureGenerator[features.length], 0, features.length);
-        this.voxelShader = Objects.requireNonNull(voxelShader);
-        this.voxelTextureAtlas = Objects.requireNonNull(voxelTextureAtlas);
         this.random = new Random(seed);
 
         chunks.defaultReturnValue(null);
     }
 
-    // Only creates a new chunk, it won't be generated
-    public VoxelChunk getChunkOrNewRaw(final Vector2ic chunkPos) {
+    // Only loads a new chunk, it won't be generated or populated
+    public VoxelChunk getChunkOrLoadEmpty(final Vector2ic chunkPos) {
         if (chunks.containsKey(chunkPos)) return chunks.get(chunkPos);
-        final var chunk = new VoxelChunk(scene, chunkPos, this, voxelShader, voxelTextureAtlas);
+
+        final var chunk = new VoxelChunk(chunkPos, this);
         chunks.put(chunkPos, chunk);
+        eventHandler.invoke(new EventChunkLoad(chunk));
         return chunk;
     }
 
     // Generates
-    public VoxelChunk getOrGenChunk(final Vector2ic chunkPos) {
-        final var chunk = getChunkOrNewRaw(chunkPos);
-        if (!chunk.isGenerated()) {
-            double start = Time.getTime();
-            voxelChunkGenerator.generate(chunk);
-            for (IVoxelChunkFeatureGenerator featureGenerator : featureQueue) featureGenerator.generate(chunk);
-            chunk.markGenerated();
-            double delta = (Time.getTime() - start);
-        }
+    public VoxelChunk getChunkOrLoadAndGen(final Vector2ic chunkPos) {
+        final var chunk = getChunkOrLoadEmpty(chunkPos);
+        generateChunk(chunk);
         return chunk;
     }
 
-    public VoxelChunk getOrGenChunk(final int x, int y) {
-        return getOrGenChunk(new Vector2i(x, y));
+    public void generateChunk(final VoxelChunk chunk) {
+        if (!chunk.isGenerated()) {
+            eventHandler.invoke(new EventChunkGenerating(chunk));
+            voxelChunkGenerator.generate(chunk);
+            for (IVoxelChunkFeatureGenerator featureGenerator : featureQueue) featureGenerator.generate(chunk);
+            chunk.markGenerated();
+            eventHandler.invoke(new EventChunkGenerated(chunk));
+        }
+    }
+
+    public VoxelChunk getChunkOrLoadAndGen(final int x, int y) {
+        return getChunkOrLoadAndGen(new Vector2i(x, y));
     }
 
     public void ifPresent(Vector2ic chunk, Consumer<VoxelChunk> ifPresent) {
@@ -86,9 +84,19 @@ public final class VoxelWorld {
         if (chunkAt != null) ifPresent.accept(chunkAt);
     }
 
+    public void ifNotPresent(Vector2ic chunk, Runnable ifPresent) {
+        final var chunkAt = getChunk(chunk);
+        if (chunkAt == null) ifPresent.run();
+    }
+
+    public void ifNotPresent(int x, int y, Runnable ifPresent) {
+        final var chunkAt = getChunk(x, y);
+        if (chunkAt == null) ifPresent.run();
+    }
+
     public void unloadChunk(final Vector2ic chunkPos) {
         final var chunkAt = chunks.remove(chunkPos);
-        if (chunkAt != null) chunkAt.onUnload();
+        if (chunkAt != null) eventHandler.invoke(new EventChunkUnload(chunkAt));
     }
 
     public VoxelChunk getChunk(final Vector2ic chunkPos) {
@@ -113,15 +121,11 @@ public final class VoxelWorld {
 
     public void setVoxel(final int worldX, final int worldY, final int i, final Voxel voxel, boolean update) {
         final var atPos = worldPosToChunk(worldX, worldY);
-        getChunkOrNewRaw(atPos).setVoxel(worldPosToInChunk(atPos, worldX, worldY), i, voxel, update);
+        getChunkOrLoadEmpty(atPos).setVoxel(worldPosToInChunk(atPos, worldX, worldY), i, voxel, update);
     }
 
     public void setVoxel(final Vector2ic worldPos, final int i, final Voxel voxel, boolean update) {
         setVoxel(worldPos.x(), worldPos.y(), i, voxel, update);
-    }
-
-    public TextureAtlas voxelTextureAtlas() {
-        return voxelTextureAtlas;
     }
 
     /**
@@ -186,6 +190,48 @@ public final class VoxelWorld {
      */
     public static Vector2i worldPosToInChunk(final Vector2ic worldPos) {
         return worldPosToInChunk(worldPos.x(), worldPos.y());
+    }
+
+    public static abstract class ChunkEvent extends Event {
+
+        public final VoxelChunk chunk;
+
+        public ChunkEvent(final VoxelChunk chunk) {
+            this.chunk = Objects.requireNonNull(chunk);
+        }
+
+    }
+
+    public static class EventChunkLoad extends ChunkEvent {
+
+        private EventChunkLoad(VoxelChunk chunk) {
+            super(chunk);
+        }
+
+    }
+
+    public static class EventChunkGenerating extends ChunkEvent {
+
+        private EventChunkGenerating(VoxelChunk chunk) {
+            super(chunk);
+        }
+
+    }
+
+    public static class EventChunkGenerated extends ChunkEvent {
+
+        private EventChunkGenerated(VoxelChunk chunk) {
+            super(chunk);
+        }
+
+    }
+
+    public static class EventChunkUnload extends ChunkEvent {
+
+        private EventChunkUnload(VoxelChunk chunk) {
+            super(chunk);
+        }
+
     }
 
 }

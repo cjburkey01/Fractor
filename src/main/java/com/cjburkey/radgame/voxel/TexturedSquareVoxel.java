@@ -2,6 +2,7 @@ package com.cjburkey.radgame.voxel;
 
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.mesh.Mesh;
+import com.cjburkey.radgame.texture.TextureAtlas;
 import com.cjburkey.radgame.world.VoxelState;
 import org.joml.AABBf;
 import org.joml.Rectanglef;
@@ -25,8 +26,8 @@ public class TexturedSquareVoxel extends SingleTexturedVoxel {
     }
 
     @Override
-    public void generateMesh(final Mesh.MeshBuilder mesh, final VoxelState voxelState) {
-        addUVSquareToMesh(mesh, voxelState.posInChunk(), voxelState.z(), voxelState.world().voxelTextureAtlas().getUv(getPrimaryTextureId()));
+    public void generateMesh(final Mesh.MeshBuilder mesh, final TextureAtlas atlas, final VoxelState voxelState) {
+        addUVSquareToMesh(mesh, voxelState.posInChunk(), voxelState.z(), atlas.getUv(getPrimaryTextureId()));
     }
 
     @Override
