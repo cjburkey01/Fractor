@@ -64,7 +64,7 @@ public class WorldHandler extends Component {
         this.chunkShader = Objects.requireNonNull(chunkShader);
 
         final var features = new ObjectArrayList<GenerationFeature>();
-        GameManager.EVENT_BUS.invoke(new EventRegisterFeatureGenerators(features));
+        GameManager.EVENT_BUS.forceInvoke(new EventRegisterFeatureGenerators(features));
         features.sort(Comparator.comparingInt(GenerationFeature::weight));
 
         voxelWorld = new VoxelWorld(GameManager.EVENT_BUS,
@@ -81,7 +81,7 @@ public class WorldHandler extends Component {
     }
 
     private void registerVoxels() {
-        GameManager.EVENT_BUS.invoke(new VoxelTypeRegisterEvent(voxels));
+        GameManager.EVENT_BUS.forceInvoke(new VoxelTypeRegisterEvent(voxels));
         voxels.finish();
     }
 
@@ -164,8 +164,10 @@ public class WorldHandler extends Component {
         }
 
         private void generateMesh() {
-            try (final var builder = meshRenderer.mesh.start()) {
-                VoxelChunkMesher.generateMesh(gameObject.transform, builder, textureAtlas, chunkAt);
+            if (chunkAt.isGenerated()) {
+                try (final var builder = meshRenderer.mesh.start()) {
+                    VoxelChunkMesher.generateMesh(gameObject.transform, builder, textureAtlas, chunkAt);
+                }
             }
         }
 

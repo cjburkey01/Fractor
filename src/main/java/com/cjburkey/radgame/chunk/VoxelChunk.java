@@ -55,7 +55,7 @@ public final class VoxelChunk {
     }
 
     public void onChunkUpdate(VoxelChunk updater) {
-        world.eventHandler.invoke(new EventChunkUpdate(updater, this));
+        world.eventHandler.invokeSafe(new EventChunkUpdate(updater, this));
     }
 
     public void setVoxel(final Vector2ic posInChunk, final int i, final Voxel voxel, boolean update) {
@@ -140,9 +140,9 @@ public final class VoxelChunk {
 
     public void markGenerated() {
         if (!generated) {
-            world.eventHandler.invoke(new VoxelChunk.EventChunkUpdate(this));
-            updateAllNeighborChunks();
             generated = true;
+            world.eventHandler.invokeSafe(new VoxelChunk.EventChunkUpdate(this));
+            updateAllNeighborChunks();
         }
     }
 

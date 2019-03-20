@@ -34,7 +34,7 @@ import static org.lwjgl.glfw.GLFW.*;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class GameManager extends Component {
 
-    public static final EventHandler EVENT_BUS = new EventHandler();
+    public static final EventHandler EVENT_BUS = new EventHandler(true);
     public static final GameManager MANAGER = new GameManager();
     private static Scene scene;
 
@@ -76,7 +76,7 @@ public class GameManager extends Component {
                     final var noise = Interpolate.map(noiseState.get(x, y), -1.0f, 1.0f, 0.0f, 1.0f);
                     final var voxelAt = chunk.getVoxelState(x, y, 1);
                     if (voxelAt != null && voxelAt.getVoxel().equals(Voxels.STONE) && noise >= 0.9f)
-                        chunk.setVoxel(x, y, 1, Voxels.DIRT);
+                        chunk.setVoxel(x, y, 1, Voxels.DIRT, false);
                 }
             }
         }));
@@ -139,11 +139,13 @@ public class GameManager extends Component {
 
     @Override
     public void onRemove() {
-        EVENT_BUS.invoke(new RadGame.EventCleanup());
+        EVENT_BUS.forceInvoke(new RadGame.EventCleanup());
     }
 
     @Override
     public void onUpdate() {
+        EVENT_BUS.updateThreadSafe();
+
         if (Input.key().wasPressed(GLFW_KEY_ESCAPE)) RadGame.INSTANCE.close();
 
         // DEBUG

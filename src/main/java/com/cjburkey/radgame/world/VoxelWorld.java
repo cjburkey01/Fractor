@@ -1,6 +1,9 @@
 package com.cjburkey.radgame.world;
 
+import com.cjburkey.radgame.RadGame;
 import com.cjburkey.radgame.chunk.VoxelChunk;
+import com.cjburkey.radgame.game.GameManager;
+import com.cjburkey.radgame.util.concurrent.ThreadPool;
 import com.cjburkey.radgame.util.event.Event;
 import com.cjburkey.radgame.util.event.EventHandler;
 import com.cjburkey.radgame.world.generate.IVoxelChunkFeatureGenerator;
@@ -29,6 +32,7 @@ public final class VoxelWorld {
     private final Object2ObjectOpenHashMap<Vector2ic, VoxelChunk> chunks = new Object2ObjectOpenHashMap<>();
     public final long seed;
     public final Random random;
+    private final ThreadPool generationPool;
 
     public VoxelWorld(final EventHandler eventHandler,
                       final long seed,
@@ -41,6 +45,10 @@ public final class VoxelWorld {
         this.random = new Random(seed);
 
         chunks.defaultReturnValue(null);
+
+        generationPool = new ThreadPool(4);
+
+        GameManager.EVENT_BUS.addListener(RadGame.EventCleanup.class, (e) -> generationPool.stop());
     }
 
     // Only loads a new chunk, it won't be generated or populated
@@ -49,7 +57,7 @@ public final class VoxelWorld {
 
         final var chunk = new VoxelChunk(chunkPos, this);
         chunks.put(chunkPos, chunk);
-        eventHandler.invoke(new EventChunkLoad(chunk));
+        eventHandler.invokeSafe(new EventChunkLoad(chunk));
         return chunk;
     }
 
@@ -62,11 +70,13 @@ public final class VoxelWorld {
 
     public void generateChunk(final VoxelChunk chunk) {
         if (!chunk.isGenerated()) {
-            eventHandler.invoke(new EventChunkGenerating(chunk));
-            voxelChunkGenerator.generate(chunk);
-            for (IVoxelChunkFeatureGenerator featureGenerator : featureQueue) featureGenerator.generate(chunk);
-            chunk.markGenerated();
-            eventHandler.invoke(new EventChunkGenerated(chunk));
+            eventHandler.invokeSafe(new EventChunkGenerating(chunk));
+            generationPool.queueAction(() -> {
+                voxelChunkGenerator.generate(chunk);
+                for (IVoxelChunkFeatureGenerator featureGenerator : featureQueue) featureGenerator.generate(chunk);
+                chunk.markGenerated();
+                eventHandler.invokeSafe(new EventChunkGenerated(chunk));
+            });
         }
     }
 
@@ -96,7 +106,7 @@ public final class VoxelWorld {
 
     public void unloadChunk(final Vector2ic chunkPos) {
         final var chunkAt = chunks.remove(chunkPos);
-        if (chunkAt != null) eventHandler.invoke(new EventChunkUnload(chunkAt));
+        if (chunkAt != null) eventHandler.invokeSafe(new EventChunkUnload(chunkAt));
     }
 
     public VoxelChunk getChunk(final Vector2ic chunkPos) {
