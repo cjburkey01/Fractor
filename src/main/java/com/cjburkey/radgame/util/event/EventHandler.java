@@ -3,6 +3,7 @@ package com.cjburkey.radgame.util.event;
 import com.cjburkey.radgame.util.concurrent.ThreadQueue;
 import com.cjburkey.radgame.util.io.Log;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import java.io.Closeable;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -10,7 +11,7 @@ import java.util.function.Consumer;
  * Created by CJ Burkey on 2019/03/11
  */
 @SuppressWarnings("unused")
-public final class EventHandler {
+public final class EventHandler implements Closeable {
 
     private final Object2ObjectOpenHashMap<Class<? extends Event>, Object2ObjectOpenHashMap<UUID, IEventCallback<?>>> eventListeners = new Object2ObjectOpenHashMap<>();
     private final Object2ObjectOpenHashMap<UUID, Class<? extends Event>> listenerMapping = new Object2ObjectOpenHashMap<>();
@@ -22,6 +23,10 @@ public final class EventHandler {
 
     public void updateThreadSafe() {
         if (threadQueue != null) threadQueue.run();
+    }
+
+    public void close() {
+        if (threadQueue != null) threadQueue.stop();
     }
 
     @SuppressWarnings("UnusedReturnValue")

@@ -140,6 +140,7 @@ public class GameManager extends Component {
     @Override
     public void onRemove() {
         EVENT_BUS.forceInvoke(new RadGame.EventCleanup());
+        EVENT_BUS.close();
     }
 
     @Override

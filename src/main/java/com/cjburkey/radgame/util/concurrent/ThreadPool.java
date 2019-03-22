@@ -15,8 +15,8 @@ public class ThreadPool {
     private boolean shouldStop = false;
 
     public ThreadPool(int threadCount) {
-        if (threadCount < 2 || threadCount > 16)
-            throw new IllegalArgumentException("Illegal number of threads in thread pool: " + threadCount + ", it must be between 2 and 16, inclusively.");
+        if (threadCount < 1 || threadCount > 16)
+            throw new IllegalArgumentException("Illegal number of threads in thread pool: " + threadCount + ", it must be between 1 and 16, inclusively.");
 
         threads = new ThreadPoolThread[threadCount];
         for (var i = 0; i < threadCount; i++) threads[i] = new ThreadPoolThread().init();

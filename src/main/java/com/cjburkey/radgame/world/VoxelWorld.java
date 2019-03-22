@@ -32,7 +32,8 @@ public final class VoxelWorld {
     private final Object2ObjectOpenHashMap<Vector2ic, VoxelChunk> chunks = new Object2ObjectOpenHashMap<>();
     public final long seed;
     public final Random random;
-    private final ThreadPool generationPool;
+
+    private final ThreadPool generationPool = new ThreadPool(8);
 
     public VoxelWorld(final EventHandler eventHandler,
                       final long seed,
@@ -45,8 +46,6 @@ public final class VoxelWorld {
         this.random = new Random(seed);
 
         chunks.defaultReturnValue(null);
-
-        generationPool = new ThreadPool(4);
 
         GameManager.EVENT_BUS.addListener(RadGame.EventCleanup.class, (e) -> generationPool.stop());
     }

@@ -1,5 +1,6 @@
 package com.cjburkey.radgame.game;
 
+import com.cjburkey.radgame.RadGame;
 import com.cjburkey.radgame.ResourceLocation;
 import com.cjburkey.radgame.Time;
 import com.cjburkey.radgame.chunk.VoxelChunk;
@@ -14,6 +15,8 @@ import com.cjburkey.radgame.shader.Material;
 import com.cjburkey.radgame.shader.Shader;
 import com.cjburkey.radgame.shader.material.TexturedTransform;
 import com.cjburkey.radgame.texture.TextureAtlas;
+import com.cjburkey.radgame.util.concurrent.ThreadPool;
+import com.cjburkey.radgame.util.concurrent.ThreadQueue;
 import com.cjburkey.radgame.util.event.Event;
 import com.cjburkey.radgame.util.io.Log;
 import com.cjburkey.radgame.util.registry.Registry;
@@ -53,10 +56,18 @@ public class WorldHandler extends Component {
     private final Shader chunkShader;
     private final TextureAtlas textureAtlas;
 
+    private static final ThreadPool meshingPool = new ThreadPool(8);
+    private static final ThreadQueue meshCallbackQueue = new ThreadQueue();
+
     public WorldHandler(final long seed,
                         final Scene scene,
                         final IVoxelChunkHeightmapGenerator voxelChunkGenerator,
                         final Shader chunkShader) {
+        GameManager.EVENT_BUS.addListener(RadGame.EventCleanup.class, e -> {
+            meshingPool.stop();
+            meshCallbackQueue.stop();
+        });
+
         Voxels.init();
         registerVoxels();
 
@@ -100,6 +111,8 @@ public class WorldHandler extends Component {
 
     @Override
     public void onUpdate() {
+        meshCallbackQueue.run();
+
         final var now = Time.getTime();
         if ((now - lastCheck) >= checkFrequency) {
             for (final var chunkLoader : chunkLoaders) {
@@ -165,9 +178,11 @@ public class WorldHandler extends Component {
 
         private void generateMesh() {
             if (chunkAt.isGenerated()) {
-                try (final var builder = meshRenderer.mesh.start()) {
+                meshingPool.queueAction(() -> {
+                    final var builder = meshRenderer.mesh.start();
                     VoxelChunkMesher.generateMesh(gameObject.transform, builder, textureAtlas, chunkAt);
-                }
+                    meshCallbackQueue.queue(builder::end);
+                });
             }
         }
 
